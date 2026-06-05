@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using AATool.Data.Objectives;
 using AATool.Net;
 using AATool.Utilities;
@@ -56,6 +57,56 @@ namespace AATool.Data.Progress
             this.InGameTime = state.InGameTime;
             this.KilometersFlown = state.KilometersFlown;
             this.ItemsEnchanted = state.ItemsEnchanted;
+        }
+
+        public WorldState FilterPlayers(HashSet<Uuid> excludedPlayers)
+        {
+            if (excludedPlayers is null || excludedPlayers.Count is 0)
+                return this;
+
+            var filtered = new WorldState();
+            foreach (Contribution contribution in this.Players.Values.Where(x => !excludedPlayers.Contains(x.Player)))
+            {
+                filtered.Players[contribution.Player] = contribution;
+
+                foreach (KeyValuePair<string, Completion> advancement in contribution.Advancements)
+                {
+                    if (!filtered.Advancements.TryGetValue(advancement.Key, out Completion first) || advancement.Value.Before(first.Timestamp))
+                        filtered.Advancements[advancement.Key] = advancement.Value;
+                }
+
+                foreach (KeyValuePair<string, Completion> criterion in contribution.Criteria)
+                {
+                    if (!filtered.Criteria.TryGetValue(criterion.Key, out Completion first) || criterion.Value.Before(first.Timestamp))
+                        filtered.Criteria[criterion.Key] = criterion.Value;
+                }
+
+                this.CopyStats(contribution.PickupCounts, filtered.PickupCounts);
+                this.CopyStats(contribution.DropCounts, filtered.DropCounts);
+                this.CopyStats(contribution.MineCounts, filtered.MineCounts);
+                this.CopyStats(contribution.CraftCounts, filtered.CraftCounts);
+                this.CopyStats(contribution.UseCounts, filtered.UseCounts);
+                this.CopyStats(contribution.KillCounts, filtered.KillCounts);
+
+                if (contribution.InGameTime > filtered.InGameTime)
+                    filtered.InGameTime = contribution.InGameTime;
+
+                filtered.KilometersFlown += contribution.KilometersFlown;
+                filtered.ItemsEnchanted += contribution.ItemsEnchanted;
+                filtered.SaveAndQuits += contribution.SaveAndQuits;
+                filtered.DamageDealt += contribution.DamageDealt;
+                filtered.DamageTaken += contribution.DamageTaken;
+                filtered.Sleeps += contribution.Sleeps;
+                filtered.Deaths += contribution.Deaths;
+                filtered.Jumps += contribution.Jumps;
+                filtered.ObtainedGodApple |= contribution.ObtainedGodApple;
+                filtered.ObtainedLapis |= contribution.ObtainedLapis;
+            }
+
+            foreach (string death in this.DeathMessages)
+                filtered.DeathMessages.Add(death);
+
+            return filtered;
         }
 
         private void CopyStats(Dictionary<string, int> source, Dictionary<string, int> destination)

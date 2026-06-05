@@ -31,6 +31,9 @@ namespace AATool
         public static bool WorldLocked { get; private set; }
         public static string Status { get; private set; }
 
+        private static string cachedExcludedPlayersRaw;
+        private static HashSet<Uuid> cachedExcludedPlayersSet;
+
         public static bool Invalidated =>
             SavesFolderChanged || ObjectivesChanged || ProgressChanged;
 
@@ -169,12 +172,18 @@ namespace AATool
         {
             var ids = new HashSet<Uuid>();
             foreach (Uuid id in State.Players.Keys)
-                ids.Add(id);
+            {
+                if (!IsPlayerExcluded(id))
+                    ids.Add(id);
+            }
 
             if (Peer.IsConnected && Peer.TryGetLobby(out Lobby lobby))
             {
                 foreach (Uuid key in lobby.Users.Keys)
-                    ids.Add(key);
+                {
+                    if (!IsPlayerExcluded(key))
+                        ids.Add(key);
+                }
             }
             else if (Config.Tracking.Filter == ProgressFilter.Solo)
             {
@@ -184,6 +193,29 @@ namespace AATool
             ids.Remove(Uuid.Empty);
             return ids;
         }
+
+        public static HashSet<Uuid> GetExcludedPlayers()
+        {
+            string raw = Config.Tracking.ExcludedPlayers.Value ?? string.Empty;
+            if (cachedExcludedPlayersSet != null && raw == cachedExcludedPlayersRaw)
+                return cachedExcludedPlayersSet;
+
+            var excluded = new HashSet<Uuid>();
+            foreach (string token in raw.Split(','))
+            {
+                if (Uuid.TryParse(token.Trim(), out Uuid id))
+                    excluded.Add(id);
+            }
+            excluded.Remove(Uuid.Empty);
+            cachedExcludedPlayersRaw = raw;
+            cachedExcludedPlayersSet = excluded;
+            return excluded;
+        }
+
+        public static bool IsPlayerExcluded(Uuid player) =>
+            player != Uuid.Empty
+            && Config.Tracking.Filter == ProgressFilter.Combined
+            && GetExcludedPlayers().Contains(player);
 
         public static void Initialize()
         {
@@ -638,15 +670,19 @@ namespace AATool
 
         private static void SetState(WorldState world)
         {
+            HashSet<Uuid> excludedPlayers = Config.Tracking.Filter == ProgressFilter.Combined
+                ? GetExcludedPlayers()
+                : new HashSet<Uuid>();
+            WorldState filteredWorld = world.FilterPlayers(excludedPlayers);
             ProgressState activeState;
             if (Config.Tracking.Filter == ProgressFilter.Combined || Peer.IsRunning)
             {
-                activeState = world;
+                activeState = filteredWorld;
             }
             else
             {
                 Player.TryGetUuid(Config.Tracking.SoloFilterName, out Uuid player);
-                world.Players.TryGetValue(player, out Contribution individual);
+                filteredWorld.Players.TryGetValue(player, out Contribution individual);
                 activeState = individual;
             }
 

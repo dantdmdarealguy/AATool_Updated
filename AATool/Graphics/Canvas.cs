@@ -85,8 +85,10 @@ namespace AATool.Graphics
 
         public void EndDraw(UIScreen screen)
         {
-            bool scaled = Config.Main.DisplayScale > 1;
-            if (screen is UIMainScreen mainScreen)
+            UIMainScreen mainScreen = screen as UIMainScreen;
+            bool scaled = mainScreen is not null
+                && (mainScreen.FormWidth != screen.Width || mainScreen.FormHeight != screen.Height);
+            if (mainScreen is not null)
             {
                 if (UIMainScreen.RefreshingCache)
                 {
@@ -116,7 +118,7 @@ namespace AATool.Graphics
                 
                 InternalBatch.Begin(SpriteSortMode.Deferred, BlendState.Opaque, SamplerState.PointClamp);
                 if (!Config.Main.HideRenderCache)
-                    InternalBatch.Draw(UIMainScreen.RenderCache, screen.Bounds, Color.White);
+                    InternalBatch.Draw(UIMainScreen.RenderCache, scaled ? screen.Bounds : mainScreen.GetPresentationBounds(), Color.White);
                 InternalBatch.End();
             }
             else
@@ -133,12 +135,12 @@ namespace AATool.Graphics
             BatchOf(Layer.Glow).End();
             BatchOf(Layer.Fore).End();
 
-            if (screen is UIMainScreen && scaled)
+            if (mainScreen is not null && scaled)
             {
                 //draw scaled viewport
                 Main.Device.SetRenderTarget(null);
                 InternalBatch.Begin(SpriteSortMode.Texture, BlendState.Opaque, SamplerState.PointClamp);
-                InternalBatch.Draw(Buffer, Main.Device.Viewport.Bounds, Color.White);
+                InternalBatch.Draw(Buffer, mainScreen.GetPresentationBounds(), Color.White);
                 InternalBatch.End();
             }
         }

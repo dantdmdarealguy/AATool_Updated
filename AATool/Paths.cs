@@ -170,10 +170,14 @@ namespace AATool
 
         public static class Web
         {
-            public const string LatestRelease = "https://github.com/DarwinBaker/AATool/releases/latest";
-            public const string ObsHelp       = "https://github.com/DarwinBaker/AATool/blob/main/info/obs.md";
-            public const string PatreonFull   = "https://www.patreon.com/_ctm";
-            public const string PatreonShort  = "Patreon.com/_CTM";
+            public const string LatestRelease = "https://github.com/dantdmdarealguy/AATool_Updated/releases/latest";
+            public const string ObsHelp       = "https://github.com/dantdmdarealguy/AATool_Updated/blob/main/info/obs.md";
+            public const string KoFiFull    = "https://ko-fi.com/dantdmdarealguy";
+            public const string KoFiShort   = "ko-fi.com/dantdmdarealguy";
+            public const string GitHubMaintainer = "https://github.com/dantdmdarealguy/AATool_Updated";
+
+            public const string PatreonFull   = "https://github.com/sponsors/dantdmdarealguy";
+            public const string PatreonShort  = "github.com/sponsors/dantdmdarealguy";
 
             public const string PayPal = "https://www.paypal.com/donate/?hosted_button_id=EN29468P8CY24";
 

@@ -8,6 +8,8 @@ namespace AATool.Data.Categories
         private const string Id = "minecraft:adventure/adventuring_time";
 
         public static readonly List<string> SupportedVersions = new () {
+            "26.1.2",
+            "1.21.11",
             "1.20",
             "1.19",
             "1.18",

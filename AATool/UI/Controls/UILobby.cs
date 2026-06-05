@@ -38,6 +38,17 @@ namespace AATool.UI.Controls
 
             foreach (Uuid key in lobby.Users.Keys)
             {
+                if (Tracker.IsPlayerExcluded(key))
+                {
+                    if (this.players.ContainsKey(key))
+                    {
+                        this.flowPlayers.RemoveControl(this.players[key]);
+                        this.players.Remove(key);
+                        changed = true;
+                    }
+                    continue;
+                }
+
                 if (!this.players.ContainsKey(key))
                 {
                     var control = new UIPlayer(lobby.Users[key]);
@@ -50,7 +61,7 @@ namespace AATool.UI.Controls
 
             foreach (Uuid id in this.players.Keys.ToArray())
             {
-                if (!lobby.Users.ContainsKey(id))
+                if (!lobby.Users.ContainsKey(id) || Tracker.IsPlayerExcluded(id))
                 {
                     this.flowPlayers.RemoveControl(this.players[id]);
                     this.players.Remove(id);

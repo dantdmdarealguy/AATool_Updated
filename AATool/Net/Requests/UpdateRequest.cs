@@ -11,8 +11,8 @@ namespace AATool.Net.Requests
 {
     public sealed class UpdateRequest : NetRequest
     {
-        private const string PatchNotesUrl = "https://github.com/DarwinBaker/AATool/releases/latest/download/patch_notes.xml";
-        private const string ThumbnailUrl = "https://github.com/DarwinBaker/AATool/releases/latest/download/thumbnail.png";
+        private const string PatchNotesUrl = "https://github.com/dantdmdarealguy/AATool_Updated/releases/latest/download/patch_notes.xml";
+        private const string ThumbnailUrl = "https://github.com/dantdmdarealguy/AATool_Updated/releases/latest/download/thumbnail.png";
 
         public static List<(string text, string icon)> LatestUpgrades { get; private set; } = new ();
         public static List<(string text, string icon)> LatestFixes    { get; private set; } = new ();

@@ -21,7 +21,7 @@ namespace AAUpdate
         private const string PROGRAM_NAME  = "AATool";
         private const string ZIP_EXTENSION = ".zip";
         private const string URL_GITHUB    = "https://github.com/";
-        private const string URL_REPO      = "DarwinBaker/AATool/";
+        private const string URL_REPO      = "dantdmdarealguy/AATool_Updated/";
         private const string URL_LATEST    = URL_REPO + "releases/latest/";
         private const string URL_DOWNLOAD  = URL_REPO + "releases/download/";
 

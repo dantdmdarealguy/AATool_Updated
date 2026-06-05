@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Windows.Forms;
@@ -17,10 +19,30 @@ namespace AATool.Winforms.Controls
 
         private static Image SoloAvatar;
         private CancellationTokenSource cancelSource;
+        private readonly ContextMenuStrip excludePlayersMenu = new();
+        private readonly Button excludePlayersButton = new();
+        private readonly Label excludePlayersLabel = new();
 
         public CTrackerSettings()
         {
             this.InitializeComponent();
+            this.components.Add(this.excludePlayersMenu);
+
+            this.excludePlayersLabel.AutoSize = true;
+            this.excludePlayersLabel.Location = new Point(4, 68);
+            this.excludePlayersLabel.Margin = new Padding(3, 6, 3, 0);
+            this.excludePlayersLabel.Name = "excludePlayersLabel";
+            this.excludePlayersLabel.Text = "Exclude Players:";
+
+            this.excludePlayersButton.Location = new Point(7, 84);
+            this.excludePlayersButton.Name = "excludePlayersButton";
+            this.excludePlayersButton.Size = new Size(98, 20);
+            this.excludePlayersButton.Text = "Select...";
+            this.excludePlayersButton.UseVisualStyleBackColor = true;
+            this.excludePlayersButton.Click += this.OnClicked;
+
+            this.groupBox5.Controls.Add(this.excludePlayersLabel);
+            this.groupBox5.Controls.Add(this.excludePlayersButton);
         }
 
         public void LoadSettings()
@@ -58,6 +80,7 @@ namespace AATool.Winforms.Controls
 
             this.UpdateSaveGroupPanel();
             this.UpdateFilterPanel();
+            this.UpdateExcludedPlayersSummary();
 
             if (SoloAvatar is null)
             {
@@ -131,7 +154,7 @@ namespace AATool.Winforms.Controls
             if (Config.Tracking.GameCategory.Changed || !this.loaded)
             {
                 this.gameVersion.Items.Clear();
-                foreach (string version in Tracker.Category.GetSupportedVersions())
+                foreach (string version in Tracker.Category.GetSupportedVersions().OrderBy(this.SortVersion))
                     this.gameVersion.Items.Add(version);
             }
             if (Config.Tracking.GameVersion.Changed || !this.loaded)
@@ -166,6 +189,82 @@ namespace AATool.Winforms.Controls
         private void UpdateFilterPanel()
         {
             this.filterSoloName.Enabled = this.filterSolo.Checked;
+            this.label10.Visible = this.filterSolo.Checked;
+            this.filterSoloName.Visible = this.filterSolo.Checked;
+            this.soloAvatar.Visible = this.filterSolo.Checked;
+
+            this.excludePlayersLabel.Visible = this.filterCombined.Checked;
+            this.excludePlayersButton.Visible = this.filterCombined.Checked;
+        }
+
+        private Version SortVersion(string version)
+        {
+            if (Version.TryParse(version, out Version parsed))
+                return parsed;
+
+            string numeric = new string(version.TakeWhile(ch => char.IsDigit(ch) || ch == '.').ToArray()).Trim('.');
+            return Version.TryParse(numeric, out parsed)
+                ? parsed
+                : new Version(0, 0);
+        }
+
+        private string GetPlayerLabel(Uuid playerId)
+        {
+            return Player.TryGetName(playerId, out string name) && !string.IsNullOrWhiteSpace(name)
+                ? name
+                : playerId.String;
+        }
+
+        private void PopulateExcludedPlayersMenu()
+        {
+            this.excludePlayersMenu.Items.Clear();
+            HashSet<Uuid> excludedPlayers = Tracker.GetExcludedPlayers();
+
+            foreach (Uuid playerId in Tracker.GetAllPlayers().Union(excludedPlayers).OrderBy(this.GetPlayerLabel))
+            {
+                if (playerId == Uuid.Empty)
+                    continue;
+
+                var item = new ToolStripMenuItem(this.GetPlayerLabel(playerId)) {
+                    Tag = playerId,
+                    Checked = excludedPlayers.Contains(playerId),
+                    CheckOnClick = true
+                };
+                item.CheckedChanged += this.OnExcludedPlayerCheckedChanged;
+                this.excludePlayersMenu.Items.Add(item);
+            }
+
+            if (this.excludePlayersMenu.Items.Count is 0)
+            {
+                this.excludePlayersMenu.Items.Add(new ToolStripMenuItem("No tracked players") {
+                    Enabled = false
+                });
+            }
+        }
+
+        private void UpdateExcludedPlayersSummary()
+        {
+            int count = Tracker.GetExcludedPlayers().Count;
+            this.excludePlayersButton.Text = count switch {
+                0 => "Select...",
+                1 => "1 selected",
+                _ => $"{count} selected"
+            };
+        }
+
+        private void SaveExcludedPlayers()
+        {
+            if (!this.loaded)
+                return;
+
+            IEnumerable<string> selected = this.excludePlayersMenu.Items
+                .OfType<ToolStripMenuItem>()
+                .Where(x => x.Tag is Uuid && x.Checked)
+                .Select(x => ((Uuid)x.Tag).String);
+
+            Config.Tracking.ExcludedPlayers.Set(string.Join(",", selected));
+            Config.Tracking.TrySave();
+            this.UpdateExcludedPlayersSummary();
         }
 
         private void TogglePassword()
@@ -210,6 +309,12 @@ namespace AATool.Winforms.Controls
             else if (sender == this.toggleCredentials)
             {
                 this.TogglePassword();
+            }
+            else if (sender == this.excludePlayersButton)
+            {
+                this.PopulateExcludedPlayersMenu();
+                this.excludePlayersMenu.Show(this.excludePlayersButton, new Point(0, this.excludePlayersButton.Height));
+                return;
             }
             else if (sender == this.configureOpenTracker)
             {
@@ -322,6 +427,11 @@ namespace AATool.Winforms.Controls
         private void OnValueChanged(object sender, EventArgs e)
         {
             this.SaveSettings();
+        }
+
+        private void OnExcludedPlayerCheckedChanged(object sender, EventArgs e)
+        {
+            this.SaveExcludedPlayers();
         }
     }
 }

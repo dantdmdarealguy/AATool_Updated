@@ -20,6 +20,9 @@ namespace AATool.Data
         public const string DiamondTier = "supporter_diamond";
         public const string NetheriteTier = "supporter_netherite";
 
+        //current maintainer (took over after original developer went inactive)
+        public const string DantDMDArealGuyName = "dantdmdarealguy";
+
         //creator of aatool
         public const string Ctm = "60bddec7-939c-4753-a898-cffa33134a4d";
         public const string CtmName = "_ctm";
@@ -61,6 +64,7 @@ namespace AATool.Data
 
         public static readonly HashSet<Credit> Special = new ()
         {
+            new (Developer, "", "dantdmdarealguy", "https://github.com/dantdmdarealguy"),
             new (Developer, "", "CTM", new Uuid("60bddec7-939c-4753-a898-cffa33134a4d"), "https://www.patreon.com/_ctm"),
             new (Dedication, "", "Wroxy"),
 

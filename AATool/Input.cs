@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using AATool.UI.Screens;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -32,10 +33,24 @@ namespace AATool
         {
             if (screen == Main.PrimaryScreen)
             {
-                //normalize cursor position to primary window viewport
-                float ratioX = (float)screen.Width / screen.GraphicsDevice.Viewport.Width;
-                float ratioY = (float)screen.Height / screen.GraphicsDevice.Viewport.Height;
-                return new Point((int)(MouseNow.X * ratioX), (int)(MouseNow.Y * ratioY));
+                //normalize cursor position to the logical presentation bounds
+                Rectangle presentation = screen is UIMainScreen mainScreen
+                    ? mainScreen.GetPresentationBounds()
+                    : screen.GraphicsDevice.Viewport.Bounds;
+
+                float inverseScaleX = (float)Math.Max(1, screen.Width) / Math.Max(1, presentation.Width);
+                float inverseScaleY = (float)Math.Max(1, screen.Height) / Math.Max(1, presentation.Height);
+                if (screen is UIMainScreen scaledScreen)
+                {
+                    float scaleFactor = scaledScreen.GetPresentationScaleFactor();
+                    float inverseScale = 1f / Math.Max(0.0001f, scaleFactor);
+                    inverseScaleX = inverseScale;
+                    inverseScaleY = inverseScale;
+                }
+
+                return new Point(
+                    (int)((MouseNow.X - presentation.X) * inverseScaleX),
+                    (int)((MouseNow.Y - presentation.Y) * inverseScaleY));
             }
             else
             {
