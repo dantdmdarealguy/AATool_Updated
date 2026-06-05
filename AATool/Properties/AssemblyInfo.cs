@@ -5,13 +5,13 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("CTM's AATool")]
-[assembly: AssemblyProduct("CTM's AATool")]
+[assembly: AssemblyTitle("AATool by dantdmdarealguy")]
+[assembly: AssemblyProduct("AATool")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyCompany("Darwin Baker Software Solutions, LLC.")]
-[assembly: AssemblyCopyright("")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyDescription("AATool, originally by CTM/DarwinBaker, now maintained by dantdmdarealguy.")]
+[assembly: AssemblyCompany("Dove Technology")]
+[assembly: AssemblyCopyright("Copyright © dantdmdarealguy 2024")]
+[assembly: AssemblyTrademark("dantdmdarealguy")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
@@ -33,6 +33,6 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 
-[assembly: AssemblyVersion("1.8.0.1")]
-[assembly: AssemblyFileVersion("1.8.0.1")]
+[assembly: AssemblyVersion("1.9.0.0")]
+[assembly: AssemblyFileVersion("1.9.0.0")]
 [assembly: NeutralResourcesLanguage("en")]

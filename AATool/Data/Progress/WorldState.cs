@@ -103,8 +103,12 @@ namespace AATool.Data.Progress
                 filtered.ObtainedLapis |= contribution.ObtainedLapis;
             }
 
-            foreach (string death in this.DeathMessages)
-                filtered.DeathMessages.Add(death);
+            // Only copy death messages if the main player is not excluded
+            if (!excludedPlayers.Contains(Tracker.GetMainPlayer()))
+            {
+                foreach (string death in this.DeathMessages)
+                    filtered.DeathMessages.Add(death);
+            }
 
             return filtered;
         }
@@ -157,7 +161,8 @@ namespace AATool.Data.Progress
             }
             else if (objective is Death death)
             {
-                if (this.DeathMessages.Contains(death.Id))
+                // Only add completion if the main player is not excluded
+                if (this.DeathMessages.Contains(death.Id) && !Tracker.IsPlayerExcluded(Tracker.GetMainPlayer()))
                     completionists.Add(new Completion(Tracker.GetMainPlayer(), default));
             }
             return completionists;
