@@ -1,4 +1,4 @@
-# CTM's AATool ➔ [Download Here!](https://github.com/dantdmdarealguy/AATool/releases/latest)
+# Dan's AATool ➔ [Download Here!](https://github.com/dantdmdarealguy/AATool/releases/latest)
 # Setup Guide ➔ [Watch Here!](https://www.youtube.com/watch?v=Oc9Uw9M_Yho)
 
 ![](info/preview_main.png)
@@ -13,7 +13,7 @@ AATool is used by countless professional speedrunners. It includes a built-in le
 It also includes the customizable overlay view that you have likely seen if you've watched any All Advancements runs. [For a guide on how to set this up yourself, click here!](info/obs.md)
 
 ## Want to Contribute?
-If you find this tool helpful or enjoy watching someone else who does, consider supporting me on [Patreon](https://www.patreon.com/_ctm) or making a [PayPal](https://www.paypal.com/donate?hosted_button_id=EN29468P8CY24) donation! This is of course completely optional and this program is and always will be completely free for everyone's use! Also, anyone who donates will have their name added to the tool's credits!
+If you find this tool helpful or enjoy watching someone else who does, consider supporting me on [Kofi](https://ko-fi.com/dantdmdarealguy), and CTM via [Patreon](https://www.patreon.com/_ctm) or making a [PayPal](https://www.paypal.com/donate?hosted_button_id=EN29468P8CY24) donation! This is of course completely optional and this program is and always will be completely free for everyone's use! Also, anyone who donates will have their name added to the tool's credits!
 
 Found a bug? Open an [Issue](https://github.com/dantdmdarealguy/AATool/issues/) and I'll get back to you ASAP! 
 Experience a crash? AATool will automatically write a crash log text file in the "logs" folder. Send this to me, and I can get working on a fix!
