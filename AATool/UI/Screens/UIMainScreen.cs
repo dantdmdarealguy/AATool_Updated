@@ -103,7 +103,10 @@ namespace AATool.UI.Screens
         public Rectangle GetPresentationBounds()
         {
             Rectangle viewport = this.GraphicsDevice.Viewport.Bounds;
-            float scale = Math.Min((float)viewport.Width / Math.Max(1, this.Width), (float)viewport.Height / Math.Max(1, this.Height));
+            if (this.Width <= 0 || this.Height <= 0)
+                return viewport;
+
+            float scale = Math.Min((float)viewport.Width / this.Width, (float)viewport.Height / this.Height);
             int width = Math.Max(1, (int)Math.Round(this.Width * scale));
             int height = Math.Max(1, (int)Math.Round(this.Height * scale));
             return new Rectangle(
