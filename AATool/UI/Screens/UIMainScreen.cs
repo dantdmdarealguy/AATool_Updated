@@ -73,6 +73,8 @@ namespace AATool.UI.Screens
         private UIButton supportPaypal;
 
         private readonly List<UIPicture> labelTintedIcons = new ();
+        private bool applyingWindowSize;
+        private bool userSizedWindow;
 
         private int logOffset;
         private int logLines;
@@ -92,8 +94,30 @@ namespace AATool.UI.Screens
             //set window title
             this.Form.Text = Main.FullTitle;
             this.Form.FormClosing += this.OnClosing;
+            this.Form.Resize += this.OnResize;
             this.Form.TopMost = Config.Main.AlwaysOnTop;
+            this.Window.AllowUserResizing = true;
             this.checklist = new(this);
+        }
+
+        public Rectangle GetPresentationBounds()
+        {
+            Rectangle viewport = this.GraphicsDevice.Viewport.Bounds;
+            float scale = Math.Min((float)viewport.Width / Math.Max(1, this.Width), (float)viewport.Height / Math.Max(1, this.Height));
+            int width = Math.Max(1, (int)Math.Round(this.Width * scale));
+            int height = Math.Max(1, (int)Math.Round(this.Height * scale));
+            return new Rectangle(
+                viewport.X + ((viewport.Width - width) / 2),
+                viewport.Y + ((viewport.Height - height) / 2),
+                width,
+                height);
+        }
+
+        private void OnResize(object sender, EventArgs e)
+        {
+            if (!this.applyingWindowSize && this.Form.WindowState == FormWindowState.Normal)
+                this.userSizedWindow = true;
+            Invalidate();
         }
 
         public void RegisterLabelTint(UIPicture control)
@@ -331,17 +355,31 @@ namespace AATool.UI.Screens
         {
             int width = this.grid?.GetExpandedWidth() ?? 1200;
             int height = this.grid?.GetExpandedHeight() ?? 600;
-            if (this.Width != width || this.Height != height || Tracker.ObjectivesChanged)
+            bool layoutChanged = this.Width != width || this.Height != height || Tracker.ObjectivesChanged;
+            if (layoutChanged)
             {
-                //this.Form.ClientSize = new System.Drawing.Size(width * Config.Main.DisplayScale, height * Config.Main.DisplayScale);
-                Main.GraphicsManager.PreferredBackBufferWidth  = width;
-                Main.GraphicsManager.PreferredBackBufferHeight = height;
-                Main.GraphicsManager.ApplyChanges();
                 this.ResizeRecursive(new Rectangle(0, 0, width, height));
                 RenderCache?.Dispose();
                 RenderCache = new RenderTarget2D(this.GraphicsDevice, width, height);
             }
-            this.Form.ClientSize = new System.Drawing.Size(width * Config.Main.DisplayScale, height * Config.Main.DisplayScale);
+            if (!this.userSizedWindow && this.Form.WindowState == FormWindowState.Normal)
+            {
+                this.applyingWindowSize = true;
+                this.Form.ClientSize = new System.Drawing.Size(
+                    Math.Max(1, width * Math.Max(1, Config.Main.DisplayScale)),
+                    Math.Max(1, height * Math.Max(1, Config.Main.DisplayScale)));
+                this.applyingWindowSize = false;
+            }
+
+            int backBufferWidth = Math.Max(1, this.Form.ClientSize.Width);
+            int backBufferHeight = Math.Max(1, this.Form.ClientSize.Height);
+            if (Main.GraphicsManager.PreferredBackBufferWidth != backBufferWidth
+                || Main.GraphicsManager.PreferredBackBufferHeight != backBufferHeight)
+            {
+                Main.GraphicsManager.PreferredBackBufferWidth = backBufferWidth;
+                Main.GraphicsManager.PreferredBackBufferHeight = backBufferHeight;
+                Main.GraphicsManager.ApplyChanges();
+            }
 
             //snap window to user's preferred location
             if (!this.Positioned || Config.Main.StartupArrangement.Changed || Config.Main.StartupDisplay.Changed)

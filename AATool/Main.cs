@@ -105,6 +105,9 @@ namespace AATool
             if (Config.Tracking.Filter == ProgressFilter.Solo)
                 Player.FetchIdentityAsync(Config.Tracking.SoloFilterName);
 
+            foreach (Uuid excludedPlayer in Tracker.GetExcludedPlayers())
+                Player.FetchIdentityAsync(excludedPlayer);
+
             //check for updates
             new UpdateRequest().EnqueueOnce();
 
