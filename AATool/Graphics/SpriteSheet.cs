@@ -43,12 +43,51 @@ namespace AATool.Graphics
         public static bool TryGet(string key, out Sprite sprite, int width = 0)
         {
             sprite = null;
-            if (key is not null && !AllSprites.TryGetValue(key, out sprite) && width > 0)
+            foreach (string candidate in GetTextureCandidates(key, width))
             {
-                //sprite not found by plain name, check for a separate "key^width" variant
-                AllSprites.TryGetValue(key + Sprite.ResolutionFlag + width, out sprite);
+                if (AllSprites.TryGetValue(candidate, out sprite))
+                    return true;
             }
-            return sprite is not null;
+
+            return false;
+        }
+
+        private static IEnumerable<string> GetTextureCandidates(string key, int width)
+        {
+            string normalized = NormalizeTextureKey(key);
+            if (string.IsNullOrEmpty(normalized))
+                yield break;
+
+            yield return normalized;
+
+            bool hasVariantSuffix = normalized.IndexOf(Sprite.ResolutionFlag) >= 0
+                || normalized.IndexOf(Sprite.FramesFlag) >= 0
+                || normalized.IndexOf(Sprite.PaddingFlag) >= 0;
+
+            if (!hasVariantSuffix && width > 0)
+                yield return normalized + Sprite.ResolutionFlag + width;
+
+            if (!hasVariantSuffix)
+            {
+                yield return normalized + Sprite.ResolutionFlag + 16;
+                yield return normalized + Sprite.ResolutionFlag + 32;
+                yield return normalized + Sprite.ResolutionFlag + 48;
+            }
+
+            if (normalized != "stone")
+                yield return "stone";
+        }
+
+        private static string NormalizeTextureKey(string key)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+                return string.Empty;
+
+            string normalized = Path.GetFileNameWithoutExtension(key.Replace('/', Path.DirectorySeparatorChar));
+            int namespaceIndex = normalized.LastIndexOf(':');
+            if (namespaceIndex >= 0)
+                normalized = normalized.Substring(namespaceIndex + 1);
+            return normalized;
         }
 
         public static bool ContainsSprite(string key) =>

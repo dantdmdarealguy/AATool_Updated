@@ -104,7 +104,7 @@
             <panel row="4" col="8" rowspan="2" border_thickness="5">
                 <textblock text="Want to Show&#xA;Your Support?" font_size="24" vertical_align="top" margin_top="22" height="24"/>
                 <panel padding_top="80" padding_left="24" padding_right="24" draw_mode="childrenonly">
-                    <textblock text="Join the Patreon or&#xA;donate with PayPal!&#xA; &#xA;This helps fund cool new updates and you get your name in the credits of&#xA;every completed AA run!&#xA; &#xA;Every bit helps&#xA; &#xA;Thank you ♥" vertical_align="top" margin_top="10" height="12"/>
+                    <textblock text="Support the maintainer or&#xA;donate with PayPal!&#xA; &#xA;This helps fund cool new updates and you get your name in the credits of&#xA;every completed AA run!&#xA; &#xA;Every bit helps&#xA; &#xA;Thank you ♥" vertical_align="top" margin_top="10" height="12"/>
                 </panel>
                 <button name="support_patreon" width="60" height="60" border_thickness="3" vertical_align="bottom" horizontal_align="left" margin_left="28" margin_bottom="26">
                     <picture texture="patreon_large" width="40" height="40"/>

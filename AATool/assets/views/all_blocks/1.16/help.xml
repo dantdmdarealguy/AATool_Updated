@@ -54,8 +54,8 @@
                         <textblock text="Hold right-click to see a close up view of a block,&#xA;as well as its name." width="150" margin_left="48" padding_bottom="2" text_align="left" margin_right="32" horizontal_align="left"/>
                     </panel>
                 </flow_panel>
-                <textblock width="300" v_text_align="bottom" padding_bottom="40" text="Building this tracker took an insane amount of work! If you enjoy it please consider supporting me on Patreon!"/>
-                <button name="https://patreon.com/_ctm" global="true" width="150" height="30" vertical_align="bottom" text="Visit the AATool Patreon"/>
+                <textblock width="300" v_text_align="bottom" padding_bottom="40" text="Building this tracker took an insane amount of work! If you enjoy it please consider supporting the maintainer on Ko-fi!"/>
+                <button name="https://ko-fi.com/dantdmdarealguy" global="true" width="150" height="30" vertical_align="bottom" text="Support on Ko-fi"/>
             </panel>
 
             <!-- mob heads -->

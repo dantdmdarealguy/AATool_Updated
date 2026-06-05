@@ -79,7 +79,7 @@
         <!-- button rows -->
         <panel name="panel_buttons_promote" layer="fore" row="2" colspan="3" draw_mode="all" vertical_align="bottom" border_thickness="2" >
             <panel width="0.8*" draw_mode="childrenonly">
-                <button name="button_patreon" layer="fore" text="    Join The Patreon!" width="0.4*" height="46" border_thickness="3" margin_left="10" horizontal_align="left">
+                <button name="button_patreon" layer="fore" text="    Support on Ko-fi!" width="0.4*" height="46" border_thickness="3" margin_left="10" horizontal_align="left">
                     <panel width="32" height="32" margin_left="10" border_thickness="3" horizontal_align="left">
                         <glow_effect texture="player_frame_gold_glow" layer="fore" scale="0.64" brightness="0.8"/>
                         <picture name="enchanted_trident" texture="enchanted_trident" layer="fore" />

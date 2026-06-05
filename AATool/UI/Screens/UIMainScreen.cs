@@ -103,17 +103,24 @@ namespace AATool.UI.Screens
         public Rectangle GetPresentationBounds()
         {
             Rectangle viewport = this.GraphicsDevice.Viewport.Bounds;
-            if (this.Width <= 0 || this.Height <= 0)
-                return viewport;
+            int designWidth = Math.Max(1, this.Width);
+            int designHeight = Math.Max(1, this.Height);
+            float scaleFactor = Math.Min((float)viewport.Width / designWidth, (float)viewport.Height / designHeight);
 
-            float scale = Math.Min((float)viewport.Width / this.Width, (float)viewport.Height / this.Height);
-            int width = Math.Max(1, (int)Math.Round(this.Width * scale));
-            int height = Math.Max(1, (int)Math.Round(this.Height * scale));
-            return new Rectangle(
-                viewport.X + ((viewport.Width - width) / 2),
-                viewport.Y + ((viewport.Height - height) / 2),
-                width,
-                height);
+            int scaledWidth = Math.Max(1, (int)Math.Round(designWidth * scaleFactor));
+            int scaledHeight = Math.Max(1, (int)Math.Round(designHeight * scaleFactor));
+            int x = viewport.X + ((viewport.Width - scaledWidth) / 2);
+            int y = viewport.Y + ((viewport.Height - scaledHeight) / 2);
+            return new Rectangle(x, y, scaledWidth, scaledHeight);
+        }
+
+        public float GetPresentationScaleFactor()
+        {
+            Rectangle viewport = this.GraphicsDevice.Viewport.Bounds;
+            int designWidth = Math.Max(1, this.Width);
+            int designHeight = Math.Max(1, this.Height);
+            return Math.Max(0.0001f,
+                Math.Min((float)viewport.Width / designWidth, (float)viewport.Height / designHeight));
         }
 
         private void OnResize(object sender, EventArgs e)
@@ -356,31 +363,38 @@ namespace AATool.UI.Screens
 
         protected override void ConstrainWindow()
         {
-            int width = this.grid?.GetExpandedWidth() ?? 1200;
-            int height = this.grid?.GetExpandedHeight() ?? 600;
-            bool layoutChanged = this.Width != width || this.Height != height || Tracker.ObjectivesChanged;
-            if (layoutChanged)
-            {
-                this.ResizeRecursive(new Rectangle(0, 0, width, height));
-                RenderCache?.Dispose();
-                RenderCache = new RenderTarget2D(this.GraphicsDevice, width, height);
-            }
+            int designWidth = Math.Max(1, this.grid?.GetExpandedWidth() ?? 1200);
+            int designHeight = Math.Max(1, this.grid?.GetExpandedHeight() ?? 600);
             if (!this.userSizedWindow && this.Form.WindowState == FormWindowState.Normal)
             {
                 this.applyingWindowSize = true;
                 this.Form.ClientSize = new System.Drawing.Size(
-                    Math.Max(1, width * Math.Max(1, Config.Main.DisplayScale)),
-                    Math.Max(1, height * Math.Max(1, Config.Main.DisplayScale)));
+                    designWidth * Math.Max(1, Config.Main.DisplayScale),
+                    designHeight * Math.Max(1, Config.Main.DisplayScale));
                 this.applyingWindowSize = false;
             }
 
-            int backBufferWidth = Math.Max(1, this.Form.ClientSize.Width);
-            int backBufferHeight = Math.Max(1, this.Form.ClientSize.Height);
-            if (Main.GraphicsManager.PreferredBackBufferWidth != backBufferWidth
-                || Main.GraphicsManager.PreferredBackBufferHeight != backBufferHeight)
+            int viewportWidth = Math.Max(1, this.Form.ClientSize.Width);
+            int viewportHeight = Math.Max(1, this.Form.ClientSize.Height);
+            bool layoutChanged = this.Width != designWidth || this.Height != designHeight || Tracker.ObjectivesChanged;
+            if (layoutChanged)
             {
-                Main.GraphicsManager.PreferredBackBufferWidth = backBufferWidth;
-                Main.GraphicsManager.PreferredBackBufferHeight = backBufferHeight;
+                this.ResizeRecursive(new Rectangle(0, 0, designWidth, designHeight));
+                RenderCache?.Dispose();
+                RenderCache = new RenderTarget2D(this.GraphicsDevice, designWidth, designHeight);
+            }
+
+            if (!this.userSizedWindow && this.Form.WindowState == FormWindowState.Normal)
+            {
+                viewportWidth = Math.Max(1, this.Form.ClientSize.Width);
+                viewportHeight = Math.Max(1, this.Form.ClientSize.Height);
+            }
+
+            if (Main.GraphicsManager.PreferredBackBufferWidth != viewportWidth
+                || Main.GraphicsManager.PreferredBackBufferHeight != viewportHeight)
+            {
+                Main.GraphicsManager.PreferredBackBufferWidth = viewportWidth;
+                Main.GraphicsManager.PreferredBackBufferHeight = viewportHeight;
                 Main.GraphicsManager.ApplyChanges();
             }
 

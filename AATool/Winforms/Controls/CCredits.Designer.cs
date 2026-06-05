@@ -79,8 +79,8 @@ namespace AATool.Winforms.Controls
             this.patreon.Size = new System.Drawing.Size(216, 28);
             this.patreon.TabIndex = 27;
             this.patreon.TabStop = true;
-            this.patreon.Tag = "https://www.patreon.com/_ctm";
-            this.patreon.Text = "If you\'d like to see your name featured here, \r\nvisit the AATool Patreon!";
+            this.patreon.Tag = "https://ko-fi.com/dantdmdarealguy";
+            this.patreon.Text = "Support the current maintainer on Ko-fi \r\nor visit CTM\'s Patreon!";
             this.patreon.Click += new System.EventHandler(this.OnClick);
             // 
             // developer
