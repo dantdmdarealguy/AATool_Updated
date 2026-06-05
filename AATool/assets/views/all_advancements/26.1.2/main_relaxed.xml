@@ -52,7 +52,7 @@
 				<objective_frame complex="GoldBlocks"/>
 				<objective_frame complex="HeavyCore"/>
 			</flow_panel>
--
+
             <!-- info panel -->
             <leaderboard name="Leaderboard" category="All Advancements" version="1.21.6" row="0" col="7" rowspan="2" rows="7"/>
             <potion_group name="Potion Recipes" row="0" col="7" rowspan="2" padding="8,0,6,0"/>

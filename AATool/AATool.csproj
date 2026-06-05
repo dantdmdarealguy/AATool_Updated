@@ -546,28 +546,28 @@
     <Content Include="assets\objectives\1.19\potions.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="assets\objectives\1.26.1.2\advancements\adventure.xml">
+    <Content Include="assets\objectives\26.1.2\advancements\adventure.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="assets\objectives\1.26.1.2\advancements\end.xml">
+    <Content Include="assets\objectives\26.1.2\advancements\end.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="assets\objectives\1.26.1.2\advancements\husbandry.xml">
+    <Content Include="assets\objectives\26.1.2\advancements\husbandry.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="assets\objectives\1.26.1.2\advancements\minecraft.xml">
+    <Content Include="assets\objectives\26.1.2\advancements\minecraft.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="assets\objectives\1.26.1.2\advancements\nether.xml">
+    <Content Include="assets\objectives\26.1.2\advancements\nether.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="assets\objectives\1.26.1.2\blocks.xml">
+    <Content Include="assets\objectives\26.1.2\blocks.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="assets\objectives\1.26.1.2\potions.xml">
+    <Content Include="assets\objectives\26.1.2\potions.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="assets\objectives\1.26.1.2\trims.xml">
+    <Content Include="assets\objectives\26.1.2\trims.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="assets\objectives\1.21.11\advancements\adventure.xml">
@@ -7830,13 +7830,13 @@
     <Content Include="assets\views\all_advancements\1.19\main_optimized.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="assets\views\all_advancements\1.26.1.2\main_compact.xml">
+    <Content Include="assets\views\all_advancements\26.1.2\main_compact.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="assets\views\all_advancements\1.26.1.2\main_optimized.xml">
+    <Content Include="assets\views\all_advancements\26.1.2\main_optimized.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="assets\views\all_advancements\1.26.1.2\main_relaxed.xml">
+    <Content Include="assets\views\all_advancements\26.1.2\main_relaxed.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="assets\views\all_advancements\1.21.11\main_compact.xml">
@@ -7908,10 +7908,10 @@
     <Content Include="assets\views\all_blocks\1.16\main.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="assets\views\all_blocks\1.26.1.2\help.xml">
+    <Content Include="assets\views\all_blocks\26.1.2\help.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="assets\views\all_blocks\1.26.1.2\main.xml">
+    <Content Include="assets\views\all_blocks\26.1.2\main.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="assets\views\all_blocks\1.21.11\help.xml">

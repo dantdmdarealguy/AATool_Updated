@@ -31,6 +31,9 @@ namespace AATool
         public static bool WorldLocked { get; private set; }
         public static string Status { get; private set; }
 
+        private static string cachedExcludedPlayersRaw;
+        private static HashSet<Uuid> cachedExcludedPlayersSet;
+
         public static bool Invalidated =>
             SavesFolderChanged || ObjectivesChanged || ProgressChanged;
 
@@ -193,13 +196,19 @@ namespace AATool
 
         public static HashSet<Uuid> GetExcludedPlayers()
         {
+            string raw = Config.Tracking.ExcludedPlayers.Value ?? string.Empty;
+            if (cachedExcludedPlayersSet != null && raw == cachedExcludedPlayersRaw)
+                return cachedExcludedPlayersSet;
+
             var excluded = new HashSet<Uuid>();
-            foreach (string token in (Config.Tracking.ExcludedPlayers.Value ?? string.Empty).Split(','))
+            foreach (string token in raw.Split(','))
             {
                 if (Uuid.TryParse(token.Trim(), out Uuid id))
                     excluded.Add(id);
             }
             excluded.Remove(Uuid.Empty);
+            cachedExcludedPlayersRaw = raw;
+            cachedExcludedPlayersSet = excluded;
             return excluded;
         }
 

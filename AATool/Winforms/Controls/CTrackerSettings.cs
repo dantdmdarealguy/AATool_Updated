@@ -26,6 +26,7 @@ namespace AATool.Winforms.Controls
         public CTrackerSettings()
         {
             this.InitializeComponent();
+            this.components.Add(this.excludePlayersMenu);
 
             this.excludePlayersLabel.AutoSize = true;
             this.excludePlayersLabel.Location = new Point(4, 68);
