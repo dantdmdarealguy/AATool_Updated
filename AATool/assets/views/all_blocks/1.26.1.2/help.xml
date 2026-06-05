@@ -62,7 +62,7 @@
                     <textblock text="Mob&#xA;Heads" vertical_align="top"/>
                     <picture texture="all_heads_1.20" width="48" height="48" layer="fore" vertical_align="top" margin_top="32"/>
                     <picture texture="charged_creeper" width="48" height="48" layer="fore" vertical_align="bottom"/>
-                </panel>to
+                </panel>
                 <panel width="318" horizontal_align="right" padding_left="10" padding_right="10">
                     <textblock text="Creepers become charged when struck by lightning and will cause zombies, skeletons, other creepers, and piglins killed by their explosion to drop a mob head. A single charged creeper can't drop more than one head, even if multiple mobs die from the resulting explosion.&#xA; &#xA;Use a channeling trident, not lightning rods as thunder may be very short. If you're in a desert or another biome with no rain the charged creepers may burn to death if you don't extinguish them with a water bucket in time.&#xA; &#xA;Skeleton Skulls can be found in Ancient Cities 1.19+" text_align="left" v_text_align="top" padding_top="8"/>
                 </panel>
@@ -269,7 +269,7 @@
                 <panel height="58" padding_bottom="6">
                     <picture texture="sweet_berries" width="32" height="32" horizontal_align="left" vertical_align="bottom" margin_left="12"/>
                     <picture texture="sweet_berry_bush" width="32" height="32" horizontal_align="right" vertical_align="bottom" margin_right="12"/>
-                    <textblock text="Sweet Berry Bush" vertical_align="top" margin_top="5"/>p
+                    <textblock text="Sweet Berry Bush" vertical_align="top" margin_top="5"/>
                 </panel>
                 <panel height="56" padding_bottom="6">
                     <picture texture="nether_wart" width="32" height="32" horizontal_align="left" vertical_align="bottom" margin_left="12"/>
@@ -664,7 +664,7 @@
                     </panel>
                     <panel width="1" vertical_align="bottom" horizontal_align="right" padding_top="10" inner_corners="false">
                     </panel>
-                    <panel width="70" height70="115" vertical_align="bottom" horizontal_align="right">
+                    <panel width="70" height="115" vertical_align="bottom" horizontal_align="right">
                         <picture texture="blockstate_variants" width="48" height="48" layer="fore" vertical_align="top" margin_top="24"/>
                         <textblock text="Alternate Variants" vertical_align="top" margin_top="76"/>
                     </panel>

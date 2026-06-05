@@ -455,7 +455,7 @@
 
         <panel row="1" rowspan="2" col="2" colspan="2" border_thickness="38" margin_bottom="42"
             width="390" height="190" horizontal_align="right" vertical_align="bottom">
-        </panel>-
+        </panel>
 
         <panel row="1" rowspan="2" col="2" colspan="2" padding_top="2" margin_right="5" margin_bottom="46"
             width="380" height="188" horizontal_align="right" vertical_align="bottom" draw_mode="childrenonly">
