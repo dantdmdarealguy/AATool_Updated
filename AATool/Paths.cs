@@ -226,6 +226,10 @@ namespace AATool
                 $"https://www.speedrun.com/static/user/{id}/image.png";
             
             public static string GetAnyPercentRecordUrl(bool rsg) => rsg ? AnyRsgRecord : AnySsgRecord;
+
+            // Ely.by API
+            public static string GetElyByUserInfoUrl(string name) =>
+                $"http://skinsystem.ely.by/profile/{name}";
         }
     }
 }

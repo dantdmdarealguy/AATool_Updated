@@ -41,6 +41,9 @@ Due to its use of DirectX for multi-window rendering, this tool is only supporte
 
 The minimum recommended resolution for using this program is 1280x720. Having a second monitor is by no means necessary, but I can highly recommend it.
 
+## Requirements
+The release build targets .NET Framework 4.8 and ships with the runtime DLLs it needs. If you are building from source, restore the packages listed in `AATool/packages.config` before compiling.
+
 ## FAQ
 **Q:** _Is this a mod or datapack?_
 

@@ -34,18 +34,30 @@ namespace AATool.Net.Requests
 
         public override async Task<bool> DownloadAsync()
         {
-            //logging
-            if (Player.TryGetName(this.id, out string name))
-                Debug.Log(Debug.RequestSection, $"{Outgoing} Requested avatar for \"{name}\"");
+            string requestUrl = this.Url; // Default to Mojang/Minotar URL
+
+            // Check if this is a cracked player with a known skin URL from Ely.by
+            if (Player.TryGetSkinUrl(this.id, out string elyBySkinUrl))
+            {
+                requestUrl = elyBySkinUrl;
+                Debug.Log(Debug.RequestSection, $"{Outgoing} Requesting Ely.by skin for cracked player {this.id.ShortString ?? this.name} from {requestUrl}");
+            }
             else
-                Debug.Log(Debug.RequestSection, $"{Outgoing} Requested avatar for {this.id.ShortString ?? this.name}");
+            {
+                // Logging for Mojang/Minotar request
+                if (Player.TryGetName(this.id, out string name))
+                    Debug.Log(Debug.RequestSection, $"{Outgoing} Requested avatar for \"{name}\" from {requestUrl}");
+                else
+                    Debug.Log(Debug.RequestSection, $"{Outgoing} Requested avatar for {this.id.ShortString ?? this.name} from {requestUrl}");
+            }
+            
             Downloads++;
             this.BeginTiming();
 
             try
             {
-                //download texture and add to atlas
-                using (Stream response = await Client.GetStreamAsync(this.Url))
+                // Download texture and add to atlas
+                using (Stream response = await Client.GetStreamAsync(requestUrl))
                 {
                     this.EndTiming();
                     return this.HandleResponse(response);
@@ -53,17 +65,21 @@ namespace AATool.Net.Requests
             }
             catch (OperationCanceledException)
             {
-                //request canceled, nothing left to do here
+                // Request canceled, nothing left to do here
                 Debug.Log(Debug.RequestSection, $"-- Avatar request cancelled for {this.id.ShortString ?? this.name}");
             }
             catch (HttpRequestException e)
             {
-                //error getting response, try other url
+                // Error getting response, try other url (only for Mojang/Minotar fallbacks)
                 Debug.Log(Debug.RequestSection, $"-- Avatar request failed for {this.id.ShortString ?? this.name}: {e.Message}");
 
-                //try other api
-                if (!this.isFallback && this.id != Uuid.Empty)
+                // If it was a Mojang/Minotar request and not a fallback already, try the fallback URL
+                if (!this.isFallback && this.id != Uuid.Empty && !Player.CrackedNameCache.ContainsKey(this.id))
                     new AvatarRequest(this.id, true).EnqueueOnce();
+            }
+            catch (Exception e)
+            {
+                Debug.Log(Debug.RequestSection, $"-- Unexpected error during avatar request for {this.id.ShortString ?? this.name}: {e.Message}");
             }
             this.EndTiming();
             return false;
@@ -76,66 +92,39 @@ namespace AATool.Net.Requests
             {
                 texture = Texture2D.FromStream(Main.GraphicsManager.GraphicsDevice, avatarStream);
 
-                if (!string.IsNullOrEmpty(this.name))
-                {
-                    Debug.Log(Debug.RequestSection, $"{Incoming} Received avatar for \"{this.name}\" in {this.ResponseTime}");
-
-                    //save a copy for the player's name
-                    string nameSprite = $"avatar-{this.name}";
-                    texture.Tag = nameSprite;
-                    if (SpriteSheet.ContainsSprite(nameSprite))
-                        SpriteSheet.Replace(nameSprite, texture);
-                    else
-                        SpriteSheet.Pack(texture);
-                    SaveToCache(texture, Path.Combine(Paths.System.AvatarCacheFolder, $"avatar-{this.name}.png"));
-                }
-                else
-                {
-                    Debug.Log(Debug.RequestSection, $"{Incoming} Received avatar for {this.id.ShortString ?? this.name} in {this.ResponseTime}");
-                }
-
+                // Cache by UUID string
                 if (this.id != Uuid.Empty)
                 {
-                    //save a copy for the player's uuid
                     string uuidSprite = $"avatar-{this.id}";
                     texture.Tag = uuidSprite;
-                    if (SpriteSheet.ContainsSprite(uuidSprite))
-                        SpriteSheet.Replace(uuidSprite, texture);
-                    else
-                        SpriteSheet.Pack(texture);
-
-                    SaveToCache(texture, Path.Combine(Paths.System.AvatarCacheFolder, $"avatar-{this.id}.png"));
-
+                    SpriteSheet.Pack(texture);
+                    Debug.Log(Debug.RequestSection, $"{Incoming} Received avatar for {this.id.ShortString} in {this.ResponseTime}");
                 }
+                // Cache by name if no UUID available
+                else if (!string.IsNullOrEmpty(this.name))
+                {
+                    string nameSprite = $"avatar-{this.name}";
+                    texture.Tag = nameSprite;
+                    SpriteSheet.Pack(texture);
+                    Debug.Log(Debug.RequestSection, $"{Incoming} Received avatar for \"{this.name}\" in {this.ResponseTime}");
+                }
+                
                 return true;
             }
             catch (ArgumentException)
             {
-                //safely ignore malformed stream and move on
+                // Safely ignore malformed stream and move on
                 Debug.Log(Debug.RequestSection, $"{Incoming} Received invalid avatar for {this.id.ShortString ?? this.name} in {this.ResponseTime}");
                 return false;
             }
             finally
             {
-                //compute average color for player-specific glow colors
-                Player.Cache(this.id, ColorHelper.GetAccent(texture));
+                // Compute average color for player-specific glow colors
+                if (this.id != Uuid.Empty && texture != null)
+                {
+                    Player.Cache(this.id, ColorHelper.GetAccent(texture));
+                }
                 texture?.Dispose();
-            }
-        }
-
-        private static void SaveToCache(Texture2D texture, string fileName)
-        {
-            try
-            {
-                //cache avatar so it loads instantly next launch
-                //overwrite to keep skins up to date
-                Directory.CreateDirectory(Paths.System.AvatarCacheFolder);
-                using (FileStream fileStream = File.Create(fileName))
-                    texture.SaveAsPng(fileStream, texture.Width, texture.Height);
-            }
-            catch (IOException)
-            {
-                //couldn't save file. ignore and move on
             }
         }
     }

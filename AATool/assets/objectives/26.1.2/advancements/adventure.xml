@@ -3,8 +3,8 @@
     <advancement id="minecraft:adventure/root"                  name="Adventure"                icon="adventure"/>
     <advancement id="minecraft:adventure/sleep_in_bed"          name="Sweet Dreams"             short_name="Dreams"/>
     <advancement id="minecraft:adventure/kill_a_mob"            name="Monster Hunter"           short_name="Hunter"/>
-    <advancement id="minecraft:adventure/take_aim"                 name="Take Aim"/>
-    <advancement id="minecraft:adventure/spear_many_mobs"          name="Impale" short_name="Impale" type="goal"/>
+    <advancement id="minecraft:adventure/take_aim"                 name="Take Aim" icon="shoot_arrow" alternate_ids="minecraft:adventure/shoot_arrow"/>
+    <advancement id="minecraft:adventure/spear_many_mobs"          name="Mob Kabob" icon="mob_kabob^160" type="goal"/>
     <advancement id="minecraft:adventure/sniper_duel"           name="Sniper Duel"              type="challenge"/>
     <advancement id="minecraft:adventure/ol_betsy"              name="Ol' Betsy"/>
     <advancement id="minecraft:adventure/whos_the_pillager_now" name="Who's the Pillager Now?"  short_name="The Pillager"/>

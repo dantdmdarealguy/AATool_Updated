@@ -76,7 +76,7 @@ namespace AATool.Data.Objectives
             return (int)(properFraction * 100);
         }
         
-        public void UpdateStates(WorldState progress)
+        public void UpdateStates(ProgressState progress) // Changed from WorldState to ProgressState
         {
             if (!this.Any)
                 return;
@@ -95,7 +95,7 @@ namespace AATool.Data.Objectives
             this.FindPlayerWithMost(progress);
         }
 
-        public void FindPlayerWithMost(WorldState progress)
+        public void FindPlayerWithMost(ProgressState progress) // Changed from WorldState to ProgressState
         {
             if (!this.Any)
                 return;
@@ -107,8 +107,9 @@ namespace AATool.Data.Objectives
                     mostCompleted = player;
             }
 
-            if (mostCompleted.Key == Uuid.Empty && progress.Players.Any())
-                mostCompleted = new(progress.Players.First().Key, 0);
+            // Removed the problematic line:
+            // if (mostCompleted.Key == Uuid.Empty && progress.Players.Any())
+            //     mostCompleted = new(progress.Players.First().Key, 0);
 
             this.ClosestToCompletion = mostCompleted.Key;
         }

@@ -36,6 +36,41 @@ namespace AATool.Saves
             }
         }
 
+        private dynamic GetAdvancementToken(Advancement advancement, JsonStream json)
+        {
+            dynamic token = json[advancement.Id];
+            if (token is not null)
+                return token;
+
+            if (advancement.HasAlternateIds)
+            {
+                foreach (string alternateId in advancement.AlternateIds)
+                {
+                    token = json[alternateId];
+                    if (token is not null)
+                        return token;
+                }
+            }
+
+            return null;
+        }
+
+        private bool TryGetCompletionOf(Advancement advancement, JsonStream json, out AdvancementCompletion completion)
+        {
+            dynamic token = this.GetAdvancementToken(advancement, json);
+            completion = new AdvancementCompletion(json, token, advancement.Id);
+            if (token is null)
+                return false;
+
+            foreach (IEnumerable<JToken> criterion in token["criteria"]?.Children())
+            {
+                string[] tokens = criterion?.ToString().Split('\"');
+                if (tokens.Length > 3 && DateTime.TryParse(tokens[3], out DateTime timestamp))
+                    completion.AddCriterion(advancement.Id, tokens[1].ToString(), timestamp);
+            }
+            return true;
+        }
+
         private bool TryGetCompletionOf(string advancement, JsonStream json, out AdvancementCompletion completion)
         {
             dynamic token = json[advancement];
@@ -56,7 +91,7 @@ namespace AATool.Saves
             Advancement advancement, JsonStream json)
         {
             var completed = new Dictionary<(string adv, string crit), DateTime>();
-            dynamic criteriaList = json?[advancement.Id]?["criteria"];
+            dynamic criteriaList = this.GetAdvancementToken(advancement, json)?["criteria"];
             if (criteriaList is null)
                 return completed;
 
@@ -78,7 +113,7 @@ namespace AATool.Saves
         {
             foreach (Advancement advancement in Tracker.Advancements.AllAdvancements.Values)
             {
-                if (this.TryGetCompletionOf(advancement.Id, json, out AdvancementCompletion progress))
+                if (this.TryGetCompletionOf(advancement, json, out AdvancementCompletion progress))
                 {
                     if (progress.AdvancementDone)
                         this.UpdateAdvancements(progress, state, contribution);

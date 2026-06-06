@@ -13,6 +13,9 @@ namespace AATool.Data.Objectives
         public Uuid DesignatedPlayer   { get; protected set; }
         public bool DesignationLinked  { get; protected set; }
         public CriteriaSet Criteria    { get; private set; }
+        public string[] AlternateIds   { get; private set; } = Array.Empty<string>();
+
+        public bool HasAlternateIds => this.AlternateIds.Length > 0;
         
         public readonly bool HiddenWhenRelaxed;
         public readonly bool HiddenWhenCompact;
@@ -30,6 +33,15 @@ namespace AATool.Data.Objectives
         {
             this.Criteria = new CriteriaSet(node?.SelectSingleNode("criteria"), this);
             this.UsedInHalfPercent = XmlObject.Attribute(node, "half", true);
+            string alternateIds = XmlObject.Attribute(node, "alternate_ids", string.Empty);
+            if (!string.IsNullOrWhiteSpace(alternateIds))
+            {
+                this.AlternateIds = alternateIds
+                    .Split(',')
+                    .Select(id => id.Trim())
+                    .Where(id => !string.IsNullOrEmpty(id))
+                    .ToArray();
+            }
 
             string hideMode = XmlObject.Attribute(node, "hidden", "false");
             if (bool.TryParse(hideMode, out bool hidden))
@@ -93,7 +105,7 @@ namespace AATool.Data.Objectives
         public override void UpdateState(ProgressState progress)
         {
             base.UpdateState(progress);
-            this.Criteria.UpdateStates(Tracker.State);
+            this.Criteria.UpdateStates(progress); // Changed from Tracker.State to progress
 
             if (!this.HasCriteria)
                 return;

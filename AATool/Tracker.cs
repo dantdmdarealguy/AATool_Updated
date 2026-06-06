@@ -152,8 +152,8 @@ namespace AATool
             Uuid mainPlayer;
             if (Config.Tracking.Filter == ProgressFilter.Solo)
                 Player.TryGetUuid(Config.Tracking.SoloFilterName, out mainPlayer);
-            else
-                mainPlayer = State.Players.Keys.FirstOrDefault();
+            else // ProgressFilter.Combined
+                mainPlayer = GetAllPlayers().FirstOrDefault(); // Changed this line to use GetAllPlayers()
 
             if (mainPlayer == Uuid.Empty)
             {
@@ -375,7 +375,7 @@ namespace AATool
             }
             else
             {
-                bool needsRefresh = (FileSystemEventRaised && FilesystemEventDebounce.IsExpired)
+                bool needsRefresh = (FilesystemEventDebounce.IsExpired && FileSystemEventRaised)
                     || ObjectivesChanged 
                     || Config.Tracking.SourceChanged
                     || (ActiveInstance.Watching && PreviousActiveId != ActiveInstance.LastActiveId);
@@ -679,11 +679,20 @@ namespace AATool
             {
                 activeState = filteredWorld;
             }
-            else
+            else // Solo mode
             {
                 Player.TryGetUuid(Config.Tracking.SoloFilterName, out Uuid player);
-                filteredWorld.Players.TryGetValue(player, out Contribution individual);
-                activeState = individual;
+                // Ensure the solo player is not excluded and their contribution exists in the filtered world.
+                if (player != Uuid.Empty && !excludedPlayers.Contains(player) && filteredWorld.Players.TryGetValue(player, out Contribution individual))
+                {
+                    activeState = individual;
+                }
+                else
+                {
+                    // If the solo player is excluded, invalid, or not found in the filtered world,
+                    // provide an empty contribution to represent no progress.
+                    activeState = new Contribution(Uuid.Empty);
+                }
             }
 
             Advancements.UpdateState(activeState);

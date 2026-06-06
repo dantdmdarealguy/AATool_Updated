@@ -9,7 +9,6 @@ using AATool.Net.Requests;
 using AATool.UI.Badges;
 using AATool.UI.Screens;
 using Microsoft.Xna.Framework;
-using SharpDX.Win32;
 
 namespace AATool.UI.Controls
 {
@@ -73,16 +72,28 @@ namespace AATool.UI.Controls
                 this.RefreshBadge();
                 if (this.Player != Uuid.Empty)
                     Net.Player.FetchIdentityAsync(this.Player);
+
                 if (Credits.TryGet(player, out Credit supporter))
                     this.SetFrame(supporter.HighestRole);
             }
+
             this.face.SetTexture($"avatar-{this.Player.String}");
         }
 
         public void SetPlayer(string name)
         {
             this.offlineName = name;
-            this.face.SetTexture($"avatar-{Leaderboard.GetRealName(name ?? string.Empty).ToLower()}");
+            Net.Player.FetchIdentityAsync(name);
+
+            if (Net.Player.TryGetUuid(name, out Uuid playerId))
+            {
+                this.Player = playerId;
+                this.face.SetTexture($"avatar-{this.Player.String}");
+            }
+            else
+            {
+                this.face.SetTexture($"avatar-{Leaderboard.GetRealName(name ?? string.Empty).ToLower()}");
+            }
 
             string realName = Leaderboard.GetRealName(name ?? string.Empty).ToLower();
             string nickName = Leaderboard.GetNickName(name ?? string.Empty).ToLower();
@@ -112,7 +123,29 @@ namespace AATool.UI.Controls
                 return;
             }
 
+            this.SetNoFrame();
             bool isMainPlayer = this.Player == Tracker.GetMainPlayer();
+            if (isMainPlayer)
+            {
+                switch (Config.Main.PreferredPlayerFrame.Value)
+                {
+                    case "None":
+                        return;
+                    case "Gold":
+                        this.SetGoldFrame();
+                        this.showFrame = true;
+                        return;
+                    case "Diamond":
+                        this.SetDiamondFrame();
+                        this.showFrame = true;
+                        return;
+                    case "Netherite":
+                        this.SetNetheriteFrame();
+                        this.showFrame = true;
+                        return;
+                }
+            }
+
             if (role is Credits.NetheriteTier or Credits.Developer or Credits.BetaTester)
             {
                 if (isMainPlayer && Config.Main.PreferredPlayerFrame == "Gold")
@@ -173,6 +206,7 @@ namespace AATool.UI.Controls
             this.face = this.First<UIPicture>();
             this.glow = this.First<UIGlowEffect>();
             this.name = this.First<UITextBlock>();
+
             this.nameOpacity = 0;
             if (!string.IsNullOrEmpty(this.offlineName))
             {
@@ -180,7 +214,7 @@ namespace AATool.UI.Controls
                 {
                     this.offlineName = string.Empty;
                     this.SetPlayer(uuid);
-                    new AvatarRequest(uuid.String).EnqueueOnce();
+                    // Removed redundant: new AvatarRequest(uuid.String).EnqueueOnce();
                 }
                 else
                 {
@@ -260,33 +294,41 @@ namespace AATool.UI.Controls
             }   
         }
 
-        private void UpdateNameText(Time time)
+        private string GetPlayerDisplayName()
         {
-            if (!this.ShowName || this.Scale < 4)
+            if (Peer.TryGetLobby(out Lobby lobby) && lobby.TryGetUser(this.Player, out User user))
             {
-                //don't show name
-                this.name.SetText(string.Empty);
-            }
-            else if (Peer.TryGetLobby(out Lobby lobby) && lobby.TryGetUser(this.Player, out User user))
-            {
-                //show preferred name
-                this.name.SetText(user.Name);
+                return user.Name;
             }
             else if (Net.Player.TryGetName(this.Player, out string mcName))
             {
-                //show minecraft name
-                this.name.SetText(mcName);
+                return mcName;
+            }
+            else if (!string.IsNullOrEmpty(this.offlineName))
+            {
+                return this.offlineName;
+            }
+            return string.Empty;
+        }
+
+        private void UpdateNameText(Time time)
+        {
+            // This method seems to be for an always-on name display, not the hover tooltip.
+            // The hover tooltip logic is now in UpdateThis.
+            if (!this.ShowName || this.Scale < 4)
+            {
+                this.name.SetText(string.Empty);
             }
             else
             {
-                //no name available
-                this.name.SetText(string.Empty);
+                this.name.SetText(GetPlayerDisplayName());
             }
 
             float targetNameOpacity = string.IsNullOrEmpty(this.name.WrappedText) ? 0 : 1;
             this.nameOpacity = MathHelper.Lerp(this.nameOpacity, targetNameOpacity, (float)(20 * time.Delta));
             this.nameOpacity = MathHelper.Clamp(this.nameOpacity, 0, 1);
             this.name.SetTextColor(Config.Main.TextColor.Value * this.nameOpacity);
+
         }
 
         public void SetBadge(Badge badge, bool ignoreSizeCheck = false)
@@ -312,6 +354,8 @@ namespace AATool.UI.Controls
 
             if (Credits.TryGet(this.Player, out Credit supporter) || Credits.TryGet(this.offlineName, out supporter))
                 this.SetFrame(supporter.HighestRole);
+            else if (this.Player == Tracker.GetMainPlayer())
+                this.SetFrame(string.Empty);
         }
 
         public void RefreshBadge()
