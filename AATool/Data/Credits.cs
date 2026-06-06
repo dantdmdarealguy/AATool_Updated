@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using AATool.Data.Speedrunning;
 using AATool.Net;
 using AATool.Net.Requests;
@@ -64,7 +65,10 @@ namespace AATool.Data
 
         public static readonly HashSet<Credit> Special = new ()
         {
-            new (Developer, "", "dantdmdarealguy", "https://github.com/dantdmdarealguy"),
+            new (Developer, "", "dantdmdarealguy", "https://github.com/dantdmdarealguy") {
+                AltNames = new List<string> { "aerobicmaple80" },
+                Uuids = new List<Uuid> { new ("d3bced91-ceb4-492c-8468-0256d3c21139") },
+            },
             new (Developer, "", "CTM", new Uuid("60bddec7-939c-4753-a898-cffa33134a4d"), "https://www.patreon.com/_ctm"),
             new (Dedication, "", "Wroxy"),
 
@@ -77,7 +81,7 @@ namespace AATool.Data
             if (Initialized)
                 return;
 
-            foreach (Credit credit in All)
+            foreach (Credit credit in All.Concat(Special))
             {
                 ByName[credit.Name.ToLower()] = credit;
                 foreach (string alt in credit.AltNames)

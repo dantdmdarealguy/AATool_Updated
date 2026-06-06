@@ -44,49 +44,26 @@ namespace AATool.UI.Badges
             Uuid mainPlayer = Tracker.GetMainPlayer();
             _= Player.TryGetName(mainPlayer, out string mainName);
             bool isMainPlayer = uuid == mainPlayer || (!string.IsNullOrEmpty(name) && name.ToLower() == mainName?.ToLower());
-
-            string preferredBadge = Config.Main.PreferredPlayerBadge.Value;
-            if (isMainPlayer)
-            {
-                switch (preferredBadge)
-                {
-                    case "None":
-                        return false;
-                    case "Developer":
-                        badge = new DeveloperBadge();
-                        return true;
-                    case "Moderator":
-                        badge = new ModBadge("Moderator Badge");
-                        return true;
-                    case "VIP":
-                        badge = new VipBadge("VIP Badge");
-                        return true;
-                    case "Gold":
-                        badge = new SupporterBadge(Credits.GoldTier);
-                        return true;
-                    case "Diamond":
-                        badge = new SupporterBadge(Credits.DiamondTier);
-                        return true;
-                    case "Netherite":
-                        badge = new SupporterBadge(Credits.NetheriteTier);
-                        return true;
-                }
-            }
+            
+            if (isMainPlayer && !onLeaderboard && Config.Main.PreferredPlayerBadge == "None")
+                return false;
 
             Leaderboard.TryGetRank(name, category, version, out int rank);
             if (rank is 1)
                 badge = new RankBadge(rank, category, version, true);
 
+            bool supporterOverride = isMainPlayer && Config.Main.PreferredPlayerBadge.Value is "Gold" or "Diamond" or "Netherite";
+
             //legendary badges
-            if (!onLeaderboard)
+            if (!onLeaderboard && !supporterOverride)
                 TryGiveLegendaryBadge(uuid, name, ref badge);
 
             //unique badges
-            if (badge is null && !onLeaderboard)
+            if (badge is null && !onLeaderboard && !supporterOverride)
                 TryGiveUniqueBadge(uuid, ref badge);
 
             //vip badges
-            if (badge is null && !onLeaderboard)
+            if (badge is null && !onLeaderboard && !supporterOverride)
                 TryGiveVipBadge(uuid, name, ref badge);
 
             //normal rank badges

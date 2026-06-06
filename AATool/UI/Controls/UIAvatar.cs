@@ -123,28 +123,7 @@ namespace AATool.UI.Controls
                 return;
             }
 
-            this.SetNoFrame();
             bool isMainPlayer = this.Player == Tracker.GetMainPlayer();
-            if (isMainPlayer)
-            {
-                switch (Config.Main.PreferredPlayerFrame.Value)
-                {
-                    case "None":
-                        return;
-                    case "Gold":
-                        this.SetGoldFrame();
-                        this.showFrame = true;
-                        return;
-                    case "Diamond":
-                        this.SetDiamondFrame();
-                        this.showFrame = true;
-                        return;
-                    case "Netherite":
-                        this.SetNetheriteFrame();
-                        this.showFrame = true;
-                        return;
-                }
-            }
 
             if (role is Credits.NetheriteTier or Credits.Developer or Credits.BetaTester)
             {
@@ -354,8 +333,6 @@ namespace AATool.UI.Controls
 
             if (Credits.TryGet(this.Player, out Credit supporter) || Credits.TryGet(this.offlineName, out supporter))
                 this.SetFrame(supporter.HighestRole);
-            else if (this.Player == Tracker.GetMainPlayer())
-                this.SetFrame(string.Empty);
         }
 
         public void RefreshBadge()

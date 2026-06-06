@@ -1,10 +1,11 @@
-﻿using System;
+using System;
+using System.Drawing;
 using System.Windows.Forms;
 using AATool.Configuration;
 using AATool.Net;
 using AATool.Net.Requests;
 using AATool.UI.Screens;
-using Microsoft.Xna.Framework;
+using AATool.Utilities;
 
 namespace AATool.Winforms.Forms
 {
@@ -24,7 +25,7 @@ namespace AATool.Winforms.Forms
         public void UpdateNotesState() => this.main.UpdateNotesState();
         public void UpdateBadgeList() => this.main.UpdateBadgeList();
         public void UpdateFrameList() => this.main.UpdateFrameList();
-        public void UpdateRainbow(Color color) => this.main.UpdateRainbow(color);
+        public void UpdateRainbow(Microsoft.Xna.Framework.Color color) => this.main.UpdateRainbow(color);
 
         private void OnActivated(object sender, EventArgs e)
         {
@@ -33,7 +34,7 @@ namespace AATool.Winforms.Forms
             {
                 this.CenterToParent();
                 this.activated = true;
-            }      
+            }
         }
 
         private void LoadSettings()
@@ -43,6 +44,37 @@ namespace AATool.Winforms.Forms
             this.network.LoadSettings();
             this.overlay.LoadSettings();
             this.debug.LoadSettings();
+            this.ApplyTheme();
+        }
+
+        private void ApplyTheme()
+        {
+            Color back = ColorHelper.ToDrawing(Config.Main.BackColor);
+            Color text = ColorHelper.ToDrawing(Config.Main.TextColor);
+
+            this.BackColor = back;
+            this.ForeColor = text;
+            ApplyThemeRecursive(this, back, text);
+        }
+
+        private static void ApplyThemeRecursive(Control control, Color back, Color text)
+        {
+            control.BackColor = back;
+            control.ForeColor = text;
+
+            if (control is Button button)
+                button.UseVisualStyleBackColor = false;
+            if (control is TabPage tabPage)
+                tabPage.UseVisualStyleBackColor = false;
+            if (control is LinkLabel linkLabel)
+            {
+                linkLabel.LinkColor = text;
+                linkLabel.ActiveLinkColor = text;
+                linkLabel.VisitedLinkColor = text;
+            }
+
+            foreach (Control child in control.Controls)
+                ApplyThemeRecursive(child, back, text);
         }
 
         private void OnButtonClick(object sender, EventArgs e)
@@ -55,9 +87,9 @@ namespace AATool.Winforms.Forms
             {
                 string msg = "This will clear all customized settings including themes, your custom save path, " +
                     "and co-op info. Are you sure you want to revert to the default settings?";
-                DialogResult confirmation = MessageBox.Show(this, msg, "Warning!", 
-                    MessageBoxButtons.YesNo, 
-                    MessageBoxIcon.Warning, 
+                DialogResult confirmation = MessageBox.Show(this, msg, "Warning!",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning,
                     MessageBoxDefaultButton.Button2);
 
                 if (confirmation == DialogResult.Yes)

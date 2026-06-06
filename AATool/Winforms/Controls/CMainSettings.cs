@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
@@ -128,15 +128,39 @@ namespace AATool.Winforms.Controls
             this.playerBadge.Items.Add("Default");
             this.playerBadge.Items.Add("None");
             this.playerBadge.Items.Add("Basic Rank");
-            this.playerBadge.Items.Add("Developer");
-            this.playerBadge.Items.Add("Moderator");
-            this.playerBadge.Items.Add("VIP");
-            this.playerBadge.Items.Add("Netherite");
-            this.playerBadge.Items.Add("Diamond");
-            this.playerBadge.Items.Add("Gold");
 
             Uuid mainPlayer = Tracker.GetMainPlayer();
             _= Player.TryGetName(mainPlayer, out string name);
+
+            if (Credits.TryGet(mainPlayer, out Credit supporter) || Credits.TryGet(name, out supporter))
+            {
+                if (supporter.HighestRole is Credits.Developer)
+                {
+                    this.playerBadge.Items.Add("Developer");
+                }
+
+                if (supporter.HighestRole is Credits.Developer || supporter.Uuids.Contains(Credits.Deadpool))
+                {
+                    this.playerBadge.Items.Add("Moderator");
+                    this.playerBadge.Items.Add("VIP");
+                }
+
+                if (supporter.HighestRole is Credits.NetheriteTier or Credits.Developer or Credits.BetaTester)
+                {
+                    this.playerBadge.Items.Add("Netherite");
+                    this.playerBadge.Items.Add("Diamond");
+                    this.playerBadge.Items.Add("Gold");
+                }
+                else if (supporter.HighestRole is Credits.DiamondTier)
+                {
+                    this.playerBadge.Items.Add("Diamond");
+                    this.playerBadge.Items.Add("Gold");
+                }
+                else if (supporter.HighestRole is Credits.GoldTier)
+                {
+                    this.playerBadge.Items.Add("Gold");
+                }
+            }
 
             string nickName = Leaderboard.GetNickName(name);
 
@@ -173,11 +197,23 @@ namespace AATool.Winforms.Controls
 
             if (!string.IsNullOrEmpty(name))
             {
-                this.labelBadgeAvailability.Text = $"🛈 These badges and frames are available to {name}.";
+                this.labelBadgeAvailability.Text = $"🛈 These are the badges and frames available to {name}.";
+                if (supporter.HighestRole is Credits.NetheriteTier)
+                {
+                    this.labelBadgeAvailability.Text += " Thanks for your incredible support!";
+                }
+                else if (supporter.HighestRole is Credits.DiamondTier)
+                {
+                    this.labelBadgeAvailability.Text += " Upgrade to netherite tier for more!";
+                }
+                else if (supporter.HighestRole is Credits.GoldTier)
+                {
+                    this.labelBadgeAvailability.Text += " Upgrade to diamond or netherite tier for more!";
+                }
             }
             else
             {
-                this.labelBadgeAvailability.Text = $"🛈 These badges and frames are available to every player.";
+                this.labelBadgeAvailability.Text = $"🛈 More badges and frames are available to supporters of the AATool Patreon!";
             }
             
 
@@ -198,12 +234,28 @@ namespace AATool.Winforms.Controls
             this.playerFrame.Items.Clear();
             this.playerFrame.Items.Add("Default");
             this.playerFrame.Items.Add("None");
-            this.playerFrame.Items.Add("Gold");
-            this.playerFrame.Items.Add("Diamond");
-            this.playerFrame.Items.Add("Netherite");
 
             Uuid mainPlayer = Tracker.GetMainPlayer();
             _= Player.TryGetName(mainPlayer, out string name);
+
+            if (Credits.TryGet(mainPlayer, out Credit supporter) || Credits.TryGet(name, out supporter))
+            {
+                if (supporter.HighestRole is Credits.NetheriteTier or Credits.Developer or Credits.BetaTester)
+                {
+                    this.playerFrame.Items.Add("Netherite");
+                    this.playerFrame.Items.Add("Diamond");
+                    this.playerFrame.Items.Add("Gold");
+                }
+                else if (supporter.HighestRole is Credits.DiamondTier)
+                {
+                    this.playerFrame.Items.Add("Diamond");
+                    this.playerFrame.Items.Add("Gold");
+                }
+                else if (supporter.HighestRole is Credits.GoldTier)
+                {
+                    this.playerFrame.Items.Add("Gold");
+                }
+            }
 
             if (!this.playerFrame.Items.Contains(Config.Main.PreferredPlayerFrame.Value))
                 this.playerFrame.Items.Add(Config.Main.PreferredPlayerFrame.Value);

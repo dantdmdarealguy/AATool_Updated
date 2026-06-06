@@ -46,7 +46,7 @@ namespace AATool.UI.Controls
 
         private const string PromoText = IntroText +
             "If you enjoy using AATool and are able,\nplease consider joining the Patreon!\n \n" +
-            "It helps make awesome updates like this possible,\nand your name in the tracker's credits!";
+            "It helps make awesome updates like this possible,\nyou get exclusive player badges and frames,\nand your name in the tracker's credits!";
 
         private const string ThanksDeadpool = IntroText +
             "Thank you so much for everything, Deadpool. You have always been\nan incredible supporter of the tracker and an incredible friend.\n \n" +
@@ -54,15 +54,15 @@ namespace AATool.UI.Controls
 
         private string ThanksNetherite(string playerName) => IntroText +
             $"Thank you so much, {playerName}\nfor your incredible generosity!\n \n" +
-            $"It helps more than you could possibly know.\nPlease enjoy your badges and player frames,\nand your name in the tracker's credits ♥";
+            $"It helps more than you could possibly know.\nPlease enjoy your badges, player frames,\nand your name in the tracker's credits ♥";
 
         private string ThanksDiamond(string playerName) => IntroText +
             $"Thank you so much, {playerName}\nfor supporting AATool!\n \n" +
-            $"You helped make this awesome update possible!\nPlease enjoy your diamond/gold badges and player frames,\nand your name in the tracker's credits ♥";
+            $"You helped make this awesome update possible!\nPlease enjoy your diamond/gold badges, player frames,\nand your name in the tracker's credits ♥";
 
         private string ThanksGold(string playerName) => IntroText +
             $"Thank you so much, {playerName}\nfor supporting AATool!\n \n" +
-            $"You helped make this awesome update possible!\nPlease enjoy your gold badge and player frame,\nand your name in the tracker's credits ♥";
+            $"You helped make this awesome update possible!\nPlease enjoy your gold badge, player frame,\nand your name in the tracker's credits ♥";
 
         public bool IsPopupVisible => this.Shown 
             && this.delayTimer.IsExpired 
