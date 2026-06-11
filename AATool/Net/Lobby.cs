@@ -8,6 +8,9 @@ namespace AATool.Net
     {
         [JsonProperty] public readonly Dictionary<Uuid, User> Users;
         [JsonProperty] public readonly Dictionary<string, Uuid> Designations;
+        [JsonProperty] public PlayerListMode PlayerFilterMode { get; set; }
+        [JsonProperty] public HashSet<Uuid> ExcludedPlayers { get; set; }
+        [JsonProperty] public HashSet<Uuid> IncludedPlayers { get; set; }
         [JsonProperty] private Uuid hostId;
 
         public int UserCount => this.Users.Count;
@@ -16,6 +19,9 @@ namespace AATool.Net
         {
             this.Users        = new ();
             this.Designations = new ();
+            this.PlayerFilterMode = PlayerListMode.Exclude;
+            this.ExcludedPlayers = new ();
+            this.IncludedPlayers = new ();
         }
 
         public bool TryGetHost(out User host) => this.Users.TryGetValue(this.hostId, out host);
@@ -29,9 +35,17 @@ namespace AATool.Net
         public static Lobby FromJsonString(string jsonString)
         {
             Lobby lobby = JsonConvert.DeserializeObject<Lobby>(jsonString);
+            if (lobby is null)
+                return new Lobby();
+            lobby.ExcludedPlayers ??= new HashSet<Uuid>();
+            lobby.IncludedPlayers ??= new HashSet<Uuid>();
 
             //attempt to load player identities
             foreach (Uuid id in lobby.Users.Keys)
+                Player.FetchIdentityAsync(id);
+            foreach (Uuid id in lobby.ExcludedPlayers)
+                Player.FetchIdentityAsync(id);
+            foreach (Uuid id in lobby.IncludedPlayers)
                 Player.FetchIdentityAsync(id);
             return lobby;
         }

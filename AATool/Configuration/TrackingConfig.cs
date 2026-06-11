@@ -30,7 +30,9 @@ namespace AATool.Configuration
 
             [JsonProperty] public readonly Setting<ProgressFilter> Filter = new (ProgressFilter.Combined);
             [JsonProperty] public readonly Setting<string> SoloFilterName = new (string.Empty);
+            [JsonProperty] public readonly Setting<PlayerListMode> PlayerFilterMode = new (PlayerListMode.Exclude);
             [JsonProperty] public readonly Setting<string> ExcludedPlayers = new (string.Empty);
+            [JsonProperty] public readonly Setting<string> IncludedPlayers = new (string.Empty);
 
             [JsonProperty] public readonly Setting<bool> BroadcastProgress = new (false);
             [JsonProperty] public readonly Setting<string> OpenTrackerKey = new (string.Empty);
@@ -55,7 +57,9 @@ namespace AATool.Configuration
             [JsonIgnore]
             public bool FilterChanged => this.Filter.Changed 
                 || (this.Filter == ProgressFilter.Solo && this.SoloFilterName.Changed)
-                || (this.Filter == ProgressFilter.Combined && this.ExcludedPlayers.Changed);
+                || (this.Filter == ProgressFilter.Combined && (this.PlayerFilterMode.Changed
+                    || (this.PlayerFilterMode == PlayerListMode.Exclude && this.ExcludedPlayers.Changed)
+                    || (this.PlayerFilterMode == PlayerListMode.Include && this.IncludedPlayers.Changed)));
 
             protected override string GetId() => "tracking";
             protected override string GetLegacyId() => "tracker";
@@ -76,7 +80,9 @@ namespace AATool.Configuration
 
                 this.RegisterSetting(this.Filter);
                 this.RegisterSetting(this.SoloFilterName);
+                this.RegisterSetting(this.PlayerFilterMode);
                 this.RegisterSetting(this.ExcludedPlayers);
+                this.RegisterSetting(this.IncludedPlayers);
 
                 this.RegisterSetting(this.BroadcastProgress);
                 this.RegisterSetting(this.OpenTrackerKey);

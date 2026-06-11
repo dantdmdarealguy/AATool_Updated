@@ -22,6 +22,8 @@ namespace AATool.Winforms.Controls
         private readonly ContextMenuStrip excludePlayersMenu = new();
         private readonly Button excludePlayersButton = new();
         private readonly Label excludePlayersLabel = new();
+        private readonly Label playerListModeLabel = new();
+        private readonly ComboBox playerListModeCombo = new();
 
         public CTrackerSettings()
         {
@@ -40,9 +42,29 @@ namespace AATool.Winforms.Controls
             this.excludePlayersButton.Text = "Select...";
             this.excludePlayersButton.UseVisualStyleBackColor = true;
             this.excludePlayersButton.Click += this.OnClicked;
+            this.excludePlayersMenu.Closing += this.OnExcludePlayersMenuClosing;
+
+            this.playerListModeLabel.AutoSize = true;
+            this.playerListModeLabel.Location = new Point(80, 19);
+            this.playerListModeLabel.Margin = new Padding(3, 6, 3, 0);
+            this.playerListModeLabel.Name = "playerListModeLabel";
+            this.playerListModeLabel.Text = "Mode:";
+
+            this.playerListModeCombo.DropDownStyle = ComboBoxStyle.DropDownList;
+            this.playerListModeCombo.Items.AddRange(new object[] {
+                "Exclude",
+                "Include"
+            });
+            this.playerListModeCombo.Location = new Point(79, 35);
+            this.playerListModeCombo.Name = "playerListModeCombo";
+            this.playerListModeCombo.Size = new Size(91, 21);
+            this.playerListModeCombo.SelectedIndexChanged += this.OnIndexChanged;
 
             this.groupBox5.Controls.Add(this.excludePlayersLabel);
             this.groupBox5.Controls.Add(this.excludePlayersButton);
+            this.groupBox5.Controls.Add(this.playerListModeLabel);
+            this.groupBox5.Controls.Add(this.playerListModeCombo);
+            this.groupBox5.Width = 178;
         }
 
         public void LoadSettings()
@@ -58,6 +80,9 @@ namespace AATool.Winforms.Controls
             this.filterCombined.Checked = Config.Tracking.Filter == ProgressFilter.Combined;
             this.filterSolo.Checked = Config.Tracking.Filter == ProgressFilter.Solo;
             this.filterSoloName.Text = Config.Tracking.SoloFilterName;
+            this.playerListModeCombo.SelectedIndex = Tracker.GetPlayerFilterMode() == PlayerListMode.Include
+                ? 1
+                : 0;
 
             this.trackActiveInstance.Checked = Config.Tracking.Source == TrackerSource.ActiveInstance;
             this.trackCustomSavesFolder.Checked = Config.Tracking.Source == TrackerSource.CustomSavesPath;
@@ -97,49 +122,52 @@ namespace AATool.Winforms.Controls
 
         private void SaveSettings()
         {
-            if (this.loaded)
-            {
-                if (this.trackActiveInstance.Checked)
-                    Config.Tracking.Source.Set(TrackerSource.ActiveInstance);
-                else if (this.trackCustomSavesFolder.Checked)
-                    Config.Tracking.Source.Set(TrackerSource.CustomSavesPath);
-                else if (this.TrackSpecificWorld.Checked)
-                    Config.Tracking.Source.Set(TrackerSource.SpecificWorld);
+            if (!this.loaded)
+                return;
 
-                Config.Tracking.CustomSavesPath.Set(this.customSavesPath.Text);
-                Config.Tracking.CustomWorldPath.Set(this.customWorldPath.Text);
+            if (this.trackActiveInstance.Checked)
+                Config.Tracking.Source.Set(TrackerSource.ActiveInstance);
+            else if (this.trackCustomSavesFolder.Checked)
+                Config.Tracking.Source.Set(TrackerSource.CustomSavesPath);
+            else if (this.TrackSpecificWorld.Checked)
+                Config.Tracking.Source.Set(TrackerSource.SpecificWorld);
 
-                if (this.filterCombined.Checked)
-                    Config.Tracking.Filter.Set(ProgressFilter.Combined);
-                else if (this.filterSolo.Checked)
-                    Config.Tracking.Filter.Set(ProgressFilter.Solo);
+            Config.Tracking.CustomSavesPath.Set(this.customSavesPath.Text);
+            Config.Tracking.CustomWorldPath.Set(this.customWorldPath.Text);
 
-                Config.Tracking.SoloFilterName.Set(this.filterSoloName.Text);
+            if (this.filterCombined.Checked)
+                Config.Tracking.Filter.Set(ProgressFilter.Combined);
+            else if (this.filterSolo.Checked)
+                Config.Tracking.Filter.Set(ProgressFilter.Solo);
 
-                TrackerSource source = this.trackActiveInstance.Checked
-                    ? TrackerSource.ActiveInstance
-                    : this.trackCustomSavesFolder.Checked
-                        ? TrackerSource.CustomSavesPath
-                        : TrackerSource.SpecificWorld;
-                Config.Tracking.Source.Set(source);
+            Config.Tracking.SoloFilterName.Set(this.filterSoloName.Text);
+            Config.Tracking.PlayerFilterMode.Set(this.playerListModeCombo.SelectedIndex == 1
+                ? PlayerListMode.Include
+                : PlayerListMode.Exclude);
 
-                Config.Tracking.ManualChecklistMode.Set(this.manualChecklist.Checked);
-                Config.Tracking.UseSftp.Set(this.worldRemote.Checked);
-                Config.Tracking.AutoDetectVersion.Set(this.autoVersion.Checked);
-                Config.Tracking.BroadcastProgress.Set(this.enableOpenTracker.Checked);
-                Config.Tracking.TrySave();
+            TrackerSource source = this.trackActiveInstance.Checked
+                ? TrackerSource.ActiveInstance
+                : this.trackCustomSavesFolder.Checked
+                    ? TrackerSource.CustomSavesPath
+                    : TrackerSource.SpecificWorld;
+            Config.Tracking.Source.Set(source);
 
-                if (int.TryParse(this.sftpPort.Text, out int port))
-                    Config.Sftp.Port.Set(port);
+            Config.Tracking.ManualChecklistMode.Set(this.manualChecklist.Checked);
+            Config.Tracking.UseSftp.Set(this.worldRemote.Checked);
+            Config.Tracking.AutoDetectVersion.Set(this.autoVersion.Checked);
+            Config.Tracking.BroadcastProgress.Set(this.enableOpenTracker.Checked);
+            Config.Tracking.TrySave();
 
-                Config.Sftp.Host.Set(this.sftpHost.Text);
-                Config.Sftp.Username.Set(this.sftpUser.Text);
-                Config.Sftp.Password.Set(this.sftpPass.Text);
-                Config.Sftp.ServerRoot.Set(this.sftpRoot.Text);
-                Config.Sftp.AutoSaveMinutes.Set((int)Math.Max(1, this.sftpAutoSaveMinutes.Value));
-                Config.Sftp.Linux.Set(this.sftpType.Text == "Linux");
-                Config.Sftp.TrySave();
-            }
+            if (int.TryParse(this.sftpPort.Text, out int port))
+                Config.Sftp.Port.Set(port);
+
+            Config.Sftp.Host.Set(this.sftpHost.Text);
+            Config.Sftp.Username.Set(this.sftpUser.Text);
+            Config.Sftp.Password.Set(this.sftpPass.Text);
+            Config.Sftp.ServerRoot.Set(this.sftpRoot.Text);
+            Config.Sftp.AutoSaveMinutes.Set((int)Math.Max(1, this.sftpAutoSaveMinutes.Value));
+            Config.Sftp.Linux.Set(this.sftpType.Text == "Linux");
+            Config.Sftp.TrySave();
         }
 
         public void InvalidateSettings()
@@ -193,8 +221,15 @@ namespace AATool.Winforms.Controls
             this.filterSoloName.Visible = this.filterSolo.Checked;
             this.soloAvatar.Visible = this.filterSolo.Checked;
 
+            this.playerListModeLabel.Visible = this.filterCombined.Checked;
+            this.playerListModeCombo.Visible = this.filterCombined.Checked;
+            this.playerListModeCombo.Enabled = this.filterCombined.Checked && !Peer.IsClient;
             this.excludePlayersLabel.Visible = this.filterCombined.Checked;
             this.excludePlayersButton.Visible = this.filterCombined.Checked;
+            this.excludePlayersLabel.Text = this.playerListModeCombo.SelectedIndex == 1
+                ? "Include Players:"
+                : "Exclude Players:";
+            this.UpdateExcludedPlayersSummary();
         }
 
         private Version SortVersion(string version)
@@ -210,6 +245,9 @@ namespace AATool.Winforms.Controls
 
         private string GetPlayerLabel(Uuid playerId)
         {
+            if (Peer.TryGetLobby(out Lobby lobby) && lobby.TryGetUser(playerId, out User user) && !string.IsNullOrWhiteSpace(user.Name))
+                return user.Name;
+
             return Player.TryGetName(playerId, out string name) && !string.IsNullOrWhiteSpace(name)
                 ? name
                 : playerId.String;
@@ -218,18 +256,26 @@ namespace AATool.Winforms.Controls
         private void PopulateExcludedPlayersMenu()
         {
             this.excludePlayersMenu.Items.Clear();
-            HashSet<Uuid> excludedPlayers = Tracker.GetExcludedPlayers();
+            HashSet<Uuid> selectedPlayers = Tracker.GetSelectedPlayers();
+            HashSet<Uuid> hostSelectedPlayers = Tracker.GetPlayerFilterMode() == PlayerListMode.Include
+                ? Tracker.GetHostIncludedPlayers()
+                : Tracker.GetHostExcludedPlayers();
 
-            foreach (Uuid playerId in Tracker.GetAllPlayers().Union(excludedPlayers).OrderBy(this.GetPlayerLabel))
+            foreach (Uuid playerId in Tracker.GetTrackedPlayers().OrderBy(this.GetPlayerLabel))
             {
                 if (playerId == Uuid.Empty)
                     continue;
 
                 var item = new ToolStripMenuItem(this.GetPlayerLabel(playerId)) {
                     Tag = playerId,
-                    Checked = excludedPlayers.Contains(playerId),
+                    Checked = selectedPlayers.Contains(playerId),
                     CheckOnClick = true
                 };
+                if (Peer.IsClient && hostSelectedPlayers.Contains(playerId))
+                {
+                    item.Enabled = false;
+                    item.ToolTipText = "Locked by the host";
+                }
                 item.CheckedChanged += this.OnExcludedPlayerCheckedChanged;
                 this.excludePlayersMenu.Items.Add(item);
             }
@@ -244,11 +290,14 @@ namespace AATool.Winforms.Controls
 
         private void UpdateExcludedPlayersSummary()
         {
-            int count = Tracker.GetExcludedPlayers().Count;
+            int count = Tracker.GetSelectedPlayers().Count;
+            string noun = Tracker.GetPlayerFilterMode() == PlayerListMode.Include
+                ? "included"
+                : "excluded";
             this.excludePlayersButton.Text = count switch {
                 0 => "Select...",
-                1 => "1 selected",
-                _ => $"{count} selected"
+                1 => $"1 {noun}",
+                _ => $"{count} {noun}"
             };
         }
 
@@ -257,12 +306,19 @@ namespace AATool.Winforms.Controls
             if (!this.loaded)
                 return;
 
+            HashSet<Uuid> localSelectedPlayers = this.playerListModeCombo.SelectedIndex == 1
+                ? Tracker.GetLocalIncludedPlayers()
+                : Tracker.GetLocalExcludedPlayers();
             IEnumerable<string> selected = this.excludePlayersMenu.Items
                 .OfType<ToolStripMenuItem>()
-                .Where(x => x.Tag is Uuid && x.Checked)
+                .Where(x => x.Tag is Uuid id && x.Checked && (x.Enabled || localSelectedPlayers.Contains(id)))
                 .Select(x => ((Uuid)x.Tag).String);
 
-            Config.Tracking.ExcludedPlayers.Set(string.Join(",", selected));
+            if (this.playerListModeCombo.SelectedIndex == 1)
+                Config.Tracking.IncludedPlayers.Set(string.Join(",", selected));
+            else
+                Config.Tracking.ExcludedPlayers.Set(string.Join(",", selected));
+
             Config.Tracking.TrySave();
             this.UpdateExcludedPlayersSummary();
         }
@@ -357,6 +413,12 @@ namespace AATool.Winforms.Controls
             {
                 Tracker.TrySetVersion(this.gameVersion.Text);
             }
+            else if (sender == this.playerListModeCombo)
+            {
+                this.SaveSettings();
+                this.UpdateFilterPanel();
+                return;
+            }
             this.SaveSettings();
         }
 
@@ -432,6 +494,12 @@ namespace AATool.Winforms.Controls
         private void OnExcludedPlayerCheckedChanged(object sender, EventArgs e)
         {
             this.SaveExcludedPlayers();
+        }
+
+        private void OnExcludePlayersMenuClosing(object sender, ToolStripDropDownClosingEventArgs e)
+        {
+            if (e.CloseReason == ToolStripDropDownCloseReason.ItemClicked)
+                e.Cancel = true;
         }
     }
 }

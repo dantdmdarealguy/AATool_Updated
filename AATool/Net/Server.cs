@@ -61,6 +61,9 @@ namespace AATool.Net
         public void SendLobby(Socket client = null)
         {
             //clients never receive and are completely oblivious to everyone else's ip addresses
+            this.Lobby.PlayerFilterMode = Config.Tracking.PlayerFilterMode;
+            this.Lobby.ExcludedPlayers = new HashSet<Uuid>(Tracker.GetLocalExcludedPlayers());
+            this.Lobby.IncludedPlayers = new HashSet<Uuid>(Tracker.GetLocalIncludedPlayers());
             string jsonString = this.Lobby.ToJsonString();
             var message = Message.Lobby(jsonString);
 

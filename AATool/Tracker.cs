@@ -152,8 +152,8 @@ namespace AATool
             Uuid mainPlayer;
             if (Config.Tracking.Filter == ProgressFilter.Solo)
                 Player.TryGetUuid(Config.Tracking.SoloFilterName, out mainPlayer);
-            else // ProgressFilter.Combined
-                mainPlayer = GetAllPlayers().FirstOrDefault(); // Changed this line to use GetAllPlayers()
+            else
+                mainPlayer = GetVisiblePlayers().FirstOrDefault();
 
             if (mainPlayer == Uuid.Empty)
             {
@@ -168,33 +168,14 @@ namespace AATool
             return PreviousMainPlayer = mainPlayer;
         }
 
-        public static HashSet<Uuid> GetAllPlayers()
+        public static PlayerListMode GetPlayerFilterMode()
         {
-            var ids = new HashSet<Uuid>();
-            foreach (Uuid id in State.Players.Keys)
-            {
-                if (!IsPlayerExcluded(id))
-                    ids.Add(id);
-            }
-
-            if (Peer.IsConnected && Peer.TryGetLobby(out Lobby lobby))
-            {
-                foreach (Uuid key in lobby.Users.Keys)
-                {
-                    if (!IsPlayerExcluded(key))
-                        ids.Add(key);
-                }
-            }
-            else if (Config.Tracking.Filter == ProgressFilter.Solo)
-            {
-                if (Player.TryGetUuid(Config.Tracking.SoloFilterName, out Uuid soloPlayer))
-                    ids.Add(soloPlayer);
-            }
-            ids.Remove(Uuid.Empty);
-            return ids;
+            if (Peer.IsClient && Peer.TryGetLobby(out Lobby lobby))
+                return lobby.PlayerFilterMode;
+            return Config.Tracking.PlayerFilterMode;
         }
 
-        public static HashSet<Uuid> GetExcludedPlayers()
+        public static HashSet<Uuid> GetLocalExcludedPlayers()
         {
             string raw = Config.Tracking.ExcludedPlayers.Value ?? string.Empty;
             if (cachedExcludedPlayersSet != null && raw == cachedExcludedPlayersRaw)
@@ -211,6 +192,112 @@ namespace AATool
             cachedExcludedPlayersSet = excluded;
             return excluded;
         }
+
+        public static HashSet<Uuid> GetLocalIncludedPlayers()
+        {
+            string raw = Config.Tracking.IncludedPlayers.Value ?? string.Empty;
+            var included = new HashSet<Uuid>();
+            foreach (string token in raw.Split(','))
+            {
+                if (Uuid.TryParse(token.Trim(), out Uuid id))
+                    included.Add(id);
+            }
+            included.Remove(Uuid.Empty);
+            return included;
+        }
+
+        public static HashSet<Uuid> GetTrackedPlayers()
+        {
+            var players = GetObservedPlayers();
+            if (Peer.TryGetLobby(out Lobby lobby))
+            {
+                if (lobby.ExcludedPlayers is not null)
+                    players.UnionWith(lobby.ExcludedPlayers);
+                if (lobby.IncludedPlayers is not null)
+                    players.UnionWith(lobby.IncludedPlayers);
+            }
+
+            players.UnionWith(GetLocalExcludedPlayers());
+            players.UnionWith(GetLocalIncludedPlayers());
+            players.Remove(Uuid.Empty);
+            return players;
+        }
+
+        public static HashSet<Uuid> GetObservedPlayers()
+        {
+            var players = new HashSet<Uuid>(State.Players.Keys);
+            if (Peer.TryGetLobby(out Lobby lobby))
+                players.UnionWith(lobby.Users.Keys);
+
+            players.Remove(Uuid.Empty);
+            return players;
+        }
+
+        public static HashSet<Uuid> GetHostExcludedPlayers()
+        {
+            if (Peer.TryGetLobby(out Lobby lobby) && lobby.ExcludedPlayers is not null)
+                return new HashSet<Uuid>(lobby.ExcludedPlayers);
+            return new HashSet<Uuid>();
+        }
+
+        public static HashSet<Uuid> GetHostIncludedPlayers()
+        {
+            if (Peer.TryGetLobby(out Lobby lobby) && lobby.IncludedPlayers is not null)
+                return new HashSet<Uuid>(lobby.IncludedPlayers);
+            return new HashSet<Uuid>();
+        }
+
+        public static HashSet<Uuid> GetSelectedPlayers()
+        {
+            HashSet<Uuid> selected = GetPlayerFilterMode() == PlayerListMode.Include
+                ? new HashSet<Uuid>(GetLocalIncludedPlayers())
+                : new HashSet<Uuid>(GetLocalExcludedPlayers());
+
+            if (Peer.IsClient && Peer.TryGetLobby(out Lobby lobby))
+            {
+                if (GetPlayerFilterMode() == PlayerListMode.Include && lobby.IncludedPlayers is not null)
+                    selected.UnionWith(lobby.IncludedPlayers);
+                else if (lobby.ExcludedPlayers is not null)
+                    selected.UnionWith(lobby.ExcludedPlayers);
+            }
+
+            selected.Remove(Uuid.Empty);
+            return selected;
+        }
+
+        public static HashSet<Uuid> GetExcludedPlayers()
+        {
+            if (Config.Tracking.Filter != ProgressFilter.Combined)
+                return new HashSet<Uuid>();
+
+            HashSet<Uuid> selected = GetSelectedPlayers();
+            if (GetPlayerFilterMode() == PlayerListMode.Exclude)
+                return selected;
+
+            HashSet<Uuid> excluded = GetObservedPlayers();
+            excluded.ExceptWith(selected);
+            return excluded;
+        }
+
+        public static HashSet<Uuid> GetVisiblePlayers()
+        {
+            if (Config.Tracking.Filter == ProgressFilter.Solo)
+            {
+                var visible = new HashSet<Uuid>();
+                Uuid soloPlayer = GetMainPlayer();
+                if (soloPlayer != Uuid.Empty)
+                    visible.Add(soloPlayer);
+                visible.Remove(Uuid.Empty);
+                return visible;
+            }
+
+            HashSet<Uuid> visiblePlayers = GetObservedPlayers();
+            visiblePlayers.ExceptWith(GetExcludedPlayers());
+            visiblePlayers.Remove(Uuid.Empty);
+            return visiblePlayers;
+        }
+
+        public static HashSet<Uuid> GetAllPlayers() => GetVisiblePlayers();
 
         public static bool IsPlayerExcluded(Uuid player) =>
             player != Uuid.Empty
@@ -639,7 +726,11 @@ namespace AATool
 
                 //broadcast changes to connected clients if server is running
                 if (Server.TryGet(out Server server) && server.Connected())
+                {
                     server.SendProgress();
+                    if (Config.Tracking.FilterChanged)
+                        server.SendLobby();
+                }
 
                 LastRefresh = time.TotalSeconds;
             }
@@ -670,29 +761,19 @@ namespace AATool
 
         private static void SetState(WorldState world)
         {
-            HashSet<Uuid> excludedPlayers = Config.Tracking.Filter == ProgressFilter.Combined
-                ? GetExcludedPlayers()
-                : new HashSet<Uuid>();
+            HashSet<Uuid> excludedPlayers = GetExcludedPlayers();
             WorldState filteredWorld = world.FilterPlayers(excludedPlayers);
             ProgressState activeState;
-            if (Config.Tracking.Filter == ProgressFilter.Combined || Peer.IsRunning)
+            if (Config.Tracking.Filter == ProgressFilter.Combined)
             {
                 activeState = filteredWorld;
             }
-            else // Solo mode
+            else
             {
-                Player.TryGetUuid(Config.Tracking.SoloFilterName, out Uuid player);
-                // Ensure the solo player is not excluded and their contribution exists in the filtered world.
-                if (player != Uuid.Empty && !excludedPlayers.Contains(player) && filteredWorld.Players.TryGetValue(player, out Contribution individual))
-                {
-                    activeState = individual;
-                }
-                else
-                {
-                    // If the solo player is excluded, invalid, or not found in the filtered world,
-                    // provide an empty contribution to represent no progress.
-                    activeState = new Contribution(Uuid.Empty);
-                }
+                Uuid player = GetMainPlayer();
+                activeState = player != Uuid.Empty && filteredWorld.Players.TryGetValue(player, out Contribution individual)
+                    ? individual
+                    : new Contribution(Uuid.Empty);
             }
 
             Advancements.UpdateState(activeState);

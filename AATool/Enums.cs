@@ -13,6 +13,12 @@
         Combined,
     }
 
+    public enum PlayerListMode
+    {
+        Exclude,
+        Include,
+    }
+
     //used for sftp
     public enum SyncState
     {
