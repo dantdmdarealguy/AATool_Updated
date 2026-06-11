@@ -56,7 +56,7 @@ namespace AATool.Data.Objectives
             this.ManuallyChecked ^= true;
 
             ProgressState progress;
-            if (Config.Tracking.Filter == ProgressFilter.Combined || Peer.IsRunning)
+            if (Config.Tracking.Filter == ProgressFilter.Combined)
             {
                 progress = Tracker.State;
             }

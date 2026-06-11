@@ -271,7 +271,8 @@ namespace AATool.UI.Controls
 
             string title = Tracker.Category.GetCompletionMessage();
             string body = "";
-            if (!Peer.IsRunning && Player.TryGetName(Tracker.GetMainPlayer(), out string name))
+            if ((Config.Tracking.Filter == ProgressFilter.Solo || !Peer.IsRunning)
+                && Player.TryGetName(Tracker.GetMainPlayer(), out string name))
                 body = $"{name} Has Completed\n";
             body += $"Minecraft: Java Edition ({Tracker.Category.CurrentVersion})\n" +
                 $"{Tracker.Category.Name.Replace(" ", "\0")}\n \n" +
@@ -281,7 +282,12 @@ namespace AATool.UI.Controls
             this.First<UITextBlock>("head_shadow").SetText(title);
             this.body.SetText(body);
 
-            WorldState state = Tracker.State;
+            WorldState state = Config.Tracking.Filter == ProgressFilter.Combined
+                ? Tracker.State
+                : new WorldState();
+            if (Config.Tracking.Filter == ProgressFilter.Solo
+                && Tracker.State.Players.TryGetValue(Tracker.GetMainPlayer(), out Contribution individual))
+                state.Players[individual.Player] = individual;
             string space = new (' ', 6);
 
             /*

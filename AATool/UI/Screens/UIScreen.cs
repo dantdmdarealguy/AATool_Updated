@@ -115,12 +115,12 @@ namespace AATool.UI.Screens
             try
             {
                 int monitorCount = Screen.AllScreens.Length;
-                int displayIndex = MathHelper.Clamp(monitor - 1, 0, monitorCount);
+                int displayIndex = MathHelper.Clamp(monitor - 1, 0, Math.Max(0, monitorCount - 1));
                 System.Drawing.Rectangle desktop = Screen.AllScreens[displayIndex].WorkingArea;
 
                 System.Drawing.Point point = snap switch {
                     WindowSnap.Remember => new (lastPosition.X, lastPosition.Y),
-                    WindowSnap.Centered => new (desktop.X + ((desktop.Width  - this.Form.Width)  / 2), (desktop.Height - this.Form.Height) / 2),
+                    WindowSnap.Centered => new (desktop.X + ((desktop.Width  - this.Form.Width)  / 2), desktop.Y + ((desktop.Height - this.Form.Height) / 2)),
                     WindowSnap.TopLeft => new (desktop.Left, desktop.Top),
                     WindowSnap.TopRight => new (desktop.Right - this.Form.Width, desktop.Top),
                     WindowSnap.BottomLeft => new(desktop.Left, desktop.Bottom - this.Form.Height),
@@ -132,7 +132,7 @@ namespace AATool.UI.Screens
 
                 //make sure window is visible on screen
                 if (!Screen.AllScreens.Any(screen => screen.WorkingArea.IntersectsWith(this.Form.Bounds)))
-                    this.Form.Location = new(desktop.X + ((desktop.Width  - this.Form.Width)  / 2), (desktop.Height - this.Form.Height) / 2);
+                    this.Form.Location = new(desktop.X + ((desktop.Width  - this.Form.Width)  / 2), desktop.Y + ((desktop.Height - this.Form.Height) / 2));
             }
             catch (Exception)
             {

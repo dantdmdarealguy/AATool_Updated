@@ -225,7 +225,9 @@ namespace AATool.Net
                 //attempt to login to server with user credentials
                 string password  = Config.Net.Password;
                 string uuid      = this.LocalUser.Id.String;
-                string preferred = this.LocalUser.Name;
+                string preferred = string.IsNullOrWhiteSpace(Config.Net.PreferredName)
+                    ? Config.Net.MinecraftName
+                    : Config.Net.PreferredName;
                 string pronouns  = this.LocalUser.Pronouns;
                 this.SendToServer(Message.LogIn(uuid, password, pronouns, preferred));
             }

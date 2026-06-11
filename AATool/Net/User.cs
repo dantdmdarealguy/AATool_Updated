@@ -25,9 +25,9 @@ namespace AATool.Net
             //set preferred name to real name if not provided and real name is known
             if (string.IsNullOrWhiteSpace(preferredName))
             {
-                this.preferredName = Player.TryGetName(preferredName, out string realName)
+                this.preferredName = Player.TryGetName(id, out string realName)
                     ? realName
-                    : preferredName;
+                    : string.Empty;
             }
             else
             {

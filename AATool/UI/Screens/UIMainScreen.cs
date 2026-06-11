@@ -363,14 +363,18 @@ namespace AATool.UI.Screens
 
         protected override void ConstrainWindow()
         {
+            if (this.Form.WindowState == FormWindowState.Minimized)
+                this.Form.WindowState = FormWindowState.Normal;
+
             int designWidth = Math.Max(1, this.grid?.GetExpandedWidth() ?? 1200);
             int designHeight = Math.Max(1, this.grid?.GetExpandedHeight() ?? 600);
             if (!this.userSizedWindow && this.Form.WindowState == FormWindowState.Normal)
             {
                 this.applyingWindowSize = true;
+                int displayScale = Math.Max(1, Config.Main.DisplayScale);
                 this.Form.ClientSize = new System.Drawing.Size(
-                    designWidth * Math.Max(1, Config.Main.DisplayScale),
-                    designHeight * Math.Max(1, Config.Main.DisplayScale));
+                    Math.Max(640, (int)Math.Round(designWidth * displayScale * 0.9f)),
+                    Math.Max(360, (int)Math.Round(designHeight * displayScale * 0.9f)));
                 this.applyingWindowSize = false;
             }
 

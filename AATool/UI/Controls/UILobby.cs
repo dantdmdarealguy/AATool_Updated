@@ -36,7 +36,9 @@ namespace AATool.UI.Controls
             if (!Peer.IsRunning || !Peer.TryGetLobby(out Lobby lobby))
                 return;
 
-            foreach (Uuid key in lobby.Users.Keys)
+            HashSet<Uuid> visiblePlayers = Tracker.GetAllPlayers();
+
+            foreach (Uuid key in visiblePlayers)
             {
                 if (Tracker.IsPlayerExcluded(key))
                 {
@@ -51,7 +53,10 @@ namespace AATool.UI.Controls
 
                 if (!this.players.ContainsKey(key))
                 {
-                    var control = new UIPlayer(lobby.Users[key]);
+                    if (!lobby.TryGetUser(key, out User user))
+                        user = new User(key, string.Empty, Player.TryGetName(key, out string name) ? name : key.String);
+
+                    var control = new UIPlayer(user);
                     control.InitializeRecursive(this.Root());
                     this.players[key] = control;
                     this.flowPlayers.AddControl(control);
@@ -61,7 +66,7 @@ namespace AATool.UI.Controls
 
             foreach (Uuid id in this.players.Keys.ToArray())
             {
-                if (!lobby.Users.ContainsKey(id) || Tracker.IsPlayerExcluded(id))
+                if (!visiblePlayers.Contains(id))
                 {
                     this.flowPlayers.RemoveControl(this.players[id]);
                     this.players.Remove(id);
